@@ -1,5 +1,5 @@
 [package]
-name = "decrypter"
+name = "chacha20mac"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -10,12 +10,10 @@ description = "Stylus hello world example"
 
 [dependencies]
 
-stylus-sdk = {version = "0.4.1", default-features = false}
-bls12_381_plus = { version = "0.7.0", default-features = false, features = ["groups"]}
-#ic_bls12_381 = {version = "0.8.0", default-features = false, features = ["groups"]}
+stylus-sdk = "0.4.1"
+
 serde = { version = "1.0", features = ["derive"] }
-alloy-primitives = "0.3.1"
-alloy-sol-types = "0.3.1"
+
 base64 = "0.21.4"
 
 hkdf = {version = "0.11", default-features = false}
@@ -24,20 +22,15 @@ hmac = {version = "0.11", default-features = false}
 sha2 = {version = "0.9", default-features = false}
 
 
-
 wee_alloc = "0.4.5"
 # arbitrum-dec = { path = "../arbitrum-dec" }
 
-[dev-dependencies]
-tokio = { version = "1.12.0", features = ["full"] }
-ethers = "2.0"
-eyre = "0.6.8"
 
 [features]
 export-abi = ["stylus-sdk/export-abi"]
 
 [[bin]]
-name = "decrypter"
+name = "chacha20mac"
 path = "src/lib.rs"
 
 
@@ -47,7 +40,7 @@ codegen-units = 1        # prefer efficiency to compile time
 panic = "abort"          # use simple panics
 opt-level = "z"          # optimize for size ("s" may also work)
 strip = true             # remove debug info
-lto = true           # link time optimization
+lto = 'fat'             # link time optimization
 debug = false            # no debug data
 rpath = false            # no run-time search path
 debug-assertions = false # prune debug assertions

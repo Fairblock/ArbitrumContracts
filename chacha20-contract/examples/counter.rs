@@ -29,12 +29,12 @@ const ENV_PROGRAM_ADDRESS: &str = "STYLUS_PROGRAM_ADDRESS";
 async fn main() -> eyre::Result<()> {
  
     let rpc_url ="https://stylus-testnet.arbitrum.io/rpc";
-    let program_address = "0xe990a7747090E384CF79Fb669265Dc8fe2F96fB6";
+    let program_address = "0x5E5A1a7725A9FAA081FE6faABC036e9a5244D1F9";
     abigen!(
         Decrypter,
         r#"[
             
-        function decryptTx(uint8[] memory tx, uint8[] memory skbytes, address ibe_contract, address decrypter_contract) external view returns (uint8[] memory)
+        function decryptTx(uint8[] memory tx, uint8[] memory skbytes, address ibe_contract, address decrypter_contract, address mac_contract) external view returns (uint8[] memory)
 
         ]"#
     );
@@ -83,14 +83,15 @@ async fn main() -> eyre::Result<()> {
         ];
         let ibe_contract: Address = "0x891565D05F42946A1c720d041E4DF69D8D490f94".parse()?;
         let decrypter_contract: Address = "0x2F04Fb351a70a450Ac0B4a4593Ec07fF9849d410".parse()?;
+        let mac_contract: Address = "0x047f15524c8cAbBb636F2a295222dc54224Ec37a".parse()?;
         // 0x891565D05F42946A1c720d041E4DF69D8D490f94 // ibe
         // 0x2F04Fb351a70a450Ac0B4a4593Ec07fF9849d410 // decrypter
     let decrypter = Decrypter::new(address, client);
    
-    let binding = decrypter.decrypt_tx(c.to_vec(), skbytes.to_vec(), ibe_contract, decrypter_contract);
+    let binding = decrypter.decrypt_tx(c.to_vec(), skbytes.to_vec(), ibe_contract, decrypter_contract,mac_contract);
     let num = binding.call().await?;
     let string = String::from_utf8(num).expect("Invalid UTF-8 sequence");
-    println!("value = {:?}", string);
+    println!("Counter number value = {:?}", string);
    //println!("Counter number value = {:?}", num);
 
     // let num = counter.number().call().await;

@@ -6,7 +6,7 @@ extern crate alloc;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-
+use base64::{engine::general_purpose, write::EncoderWriter, Engine};
 use std::{io::Cursor, str::FromStr};
 use bls12_381_plus::{G1Affine, G2Affine};
 use serde::Deserialize;
@@ -17,7 +17,7 @@ use stylus_sdk::{
 };
 // use std::io::{Error, ErrorKind};
 // mod ibe;
-use base64::write::EncoderWriter;
+
 
 use hkdf::Hkdf;
 use hmac::{Hmac, Mac, NewMac};
@@ -48,16 +48,19 @@ sol_interface! {
     interface IDecrypterChacha20 {
         function decrypter(uint8[] memory file_key, uint8[] memory nonce, uint8[] memory s) external pure returns (uint8[] memory);
     }
+    interface IMacChacha20 {
+        function headerMac(uint8[] memory file_key, string calldata type_, string[] memory args, uint8[] memory body) external pure returns (uint8[] memory);
+    }
 }
 /// Define an implementation of the generated Counter struct, defining a set_number
 /// and increment method using the features of the Stylus SDK.
 #[external]
 impl Decrypter {
    
-    pub fn decrypt_tx(&self, tx: Vec<u8>,  skbytes: Vec<u8>, ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
+    pub fn decrypt_tx(&self, tx: Vec<u8>,  skbytes: Vec<u8>, ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20, mac_contract:IMacChacha20) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
         let sk = G2Affine::from_compressed(&skbytes.try_into().unwrap()).unwrap();
         let mut cursor = Cursor::new(tx);
-        let decrypted = Decrypt(*self,&sk, &mut cursor, ibe_contract,decrypter_contract);
+        let decrypted = Decrypt(*self,&sk, &mut cursor, ibe_contract,decrypter_contract,mac_contract);
         Ok(decrypted)
     }
 
@@ -103,7 +106,7 @@ fn split_args(line: &[u8]) -> (String, Vec<String>) {
 }
 
 fn decode_string(s: &str) -> Vec<u8> {
-    base64::decode(s).unwrap()
+    general_purpose::STANDARD_NO_PAD.decode(s).unwrap()
 }
 
 fn is_valid_string(s: &str) -> bool {
@@ -182,25 +185,7 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
     Ok((h, payload))
 }
 
-impl Stanza {
-    fn marshal<'a, W: Write>(&'a self, w: &'a mut W) -> &mut W {
-        let _ = w.write_all(RECIPIENT_PREFIX);
-        write!(w, " {}", self.type_);
-        for arg in &self.args {
-            write!(w, " {}", arg);
-        }
-        writeln!(w);
 
-        // Create a Base64 encoder that writes to `w`
-        let mut ww = EncoderWriter::new(w, base64::STANDARD);
-
-        // Write the body to the Base64 encoder
-        let _ = ww.write_all(&self.body);
-
-        // Finalize the Base64 encoding and handle potential errors
-        ww.finish().unwrap()
-    }
-}
 struct HmacWriter(Hmac<Sha256>);
 
 impl HmacWriter {
@@ -220,27 +205,18 @@ impl Write for HmacWriter {
     }
 }
 // Additional helper functions and modules (like 'armor' and 'parse') would be needed based on the actual 'ibe' package
-impl Header {
-    fn marshal_without_mac<W: Write>(&self, w: &mut W) -> io::Result<()> {
-        write!(w, "{}", INTRO)?;
-        for r in &self.recipients {
-            r.marshal(w);
-        }
-        write!(w, "{:?}", FOOTER_PREFIX)
-    }
-}
 
-fn header_mac(file_key: &[u8], hdr: &Header) -> Vec<u8> {
-    let h = Hkdf::<Sha256>::new(None, file_key);
-    let mut hmac_key = [0u8; 32];
-    let _ = h.expand(b"header", &mut hmac_key);
+// fn header_mac(file_key: &[u8], hdr: &Header) -> Vec<u8> {
+//     let h = Hkdf::<Sha256>::new(None, file_key);
+//     let mut hmac_key = [0u8; 32];
+//     let _ = h.expand(b"header", &mut hmac_key);
 
-    let hh = Hmac::<Sha256>::new_from_slice(&hmac_key).expect("HMAC can take key of any size");
-    let mut hmac_writer = HmacWriter::new(hh.clone());
-    let _ =  hdr.marshal_without_mac(&mut hmac_writer);
+//     let hh = Hmac::<Sha256>::new_from_slice(&hmac_key).expect("HMAC can take key of any size");
+//     let mut hmac_writer = HmacWriter::new(hh.clone());
+//     let _ =  hdr.marshal_without_mac(&mut hmac_writer);
 
-    hh.finalize().into_bytes().to_vec()
-}
+//     hh.finalize().into_bytes().to_vec()
+// }
 
 #[derive( Clone, Deserialize)]
 struct Stanza {
@@ -249,7 +225,7 @@ struct Stanza {
     body: Vec<u8>,
 }
 
-pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20) -> Vec<u8> {
+pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20, mac_contract:IMacChacha20) -> Vec<u8> {
     // Parsing header and payload
     let (hdr, mut payload) = parse(src).unwrap();
 
@@ -262,10 +238,11 @@ pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_con
 
     let file_key = unwrap(dec, sk, &[*hdr.recipients[0].clone()],ibe_contract);
 
-    // let mac = header_mac(&file_key, &hdr);
-    // if mac != hdr.mac {
-    //     return vec![];
-    // }
+    let mac = mac_contract.header_mac(&dec,file_key.clone(),hdr.recipients[0].clone().type_,hdr.recipients[0].clone().args,hdr.recipients[0].clone().body).unwrap();
+   
+    if mac != hdr.mac {
+         return vec![];
+    }
     let mut nonce = vec![0u8; 16];
 
     payload.read_exact(&mut nonce).unwrap(); // Handle potential errors properly
