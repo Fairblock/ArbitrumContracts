@@ -75,6 +75,6 @@ In order to test the functionality, a basic implementation of an auction contrac
    - Requirement: These repositories need to be built and located alongside the `ArbitrumContracts` directory for the test to function properly.
 
 3. **Execution**:
-   - The script initializes the `custom-contract`, submits an encrypted bid, submits the decryption key, and then retrieves the winning bid. These steps are included in the example code of the `test-script/custom-contract-test`.
+   - The script initializes the `custom-contract`, submits an encrypted bid, submits the decryption key, and then retrieves the winning bid. These steps are included in the example code of the `test-script/custom-test`.
    - Note: In the current test setup, only one bid is submitted, so the winner is the sole bidder.
 

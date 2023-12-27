@@ -83,6 +83,6 @@ echo "cipher: $cipher"
 
 #######
 
-cd ../ArbitrumContracts/test-script/custom-contract-test
+cd ../ArbitrumContracts/test-script/custom-test
 
 RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressIbe" "$addressChachadec" "$addressChachamac" "$addressDec" "$cipher" "$key_share" "$sk"
