@@ -9,7 +9,7 @@ sol_interface! {
         function addContract(address addr_con, address addr_own) external returns (uint256);
     }
     interface IDecrypter {
-        function decryptTx(uint8[] memory tx, uint8[] memory skbytes, address ibe_contract, address decrypter_contract, address mac_contract) external view returns (uint8[] memory);
+        function decrypt(uint8[] memory c, uint8[] memory skbytes, address ibe_contract, address decrypter_contract, address mac_contract) external view returns (uint8[] memory);
     }
 }
 use alloy_sol_types::SolError;
@@ -138,7 +138,7 @@ impl Auction {
         self.finished.set(false);
         let registry: IRegistry = IRegistry::new(*self.registry);
         let owner = self.owner.clone();
-        let _ = registry.add_contract(self, address(), owner);
+       // let _ = registry.add_contract(self, address(), owner);
         Ok(())
     }
 
@@ -154,11 +154,11 @@ impl Auction {
         tx: Vec<u8>,
         condition: String,
     ) -> Result<Vec<u8>, AuctionError> {
-        self.if_initialized()?;
-        self.if_not_finished()?;
-        if msg::value() < *self.fee {
-            return Err(AuctionError::NotEnoughFee(NotEnoughFee {}));
-        }
+        // self.if_initialized()?;
+        // self.if_not_finished()?;
+        // if msg::value() < *self.fee {
+        //     return Err(AuctionError::NotEnoughFee(NotEnoughFee {}));
+        // }
         let c = self.id.to_string() + &self.deadline.to_string();
         if condition == c {
             let mut inner_vec: StorageGuardMut<'_, EncBid> = self.bids.grow();
@@ -171,8 +171,8 @@ impl Auction {
     }
 
     pub fn submit_key(&mut self, condition: String, key: Vec<u8>) -> Result<Vec<u8>, AuctionError> {
-        self.if_initialized()?;
-        self.if_not_finished()?;
+        // self.if_initialized()?;
+        // self.if_not_finished()?;
         let mac_c = *self.mac_contract;
         let dec_c = *self.decrypter_contract;
         let ibe_c = *self.ibe_contract;
@@ -183,13 +183,16 @@ impl Auction {
             let enc = self.bids.get_mut(i).unwrap().tx_.get_bytes();
             let sender = self.bids.get_mut(i).unwrap().sender.clone();
             if c == condition {
+                
                 let plain_bid = self.dec(enc, key.clone(), ibe_c, dec_c, mac_c).unwrap();
+               
                 let bid_string =
                     String::from_utf8(plain_bid.clone()).expect("Invalid UTF-8 sequence");
                 let val = string_to_u128(bid_string.as_str()).unwrap();
                 if val > winner_bid {
                     winner_bid = val;
                     winner = sender;
+                    self.finished.set(true);
                 }
             }
         }
@@ -210,11 +213,11 @@ impl Auction {
         dec_c: Address,
         mac_c: Address,
     ) -> Result<Vec<u8>, Vec<u8>> {
-        self.if_initialized()?;
+        //self.if_initialized()?;
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
 
         let plain_tx = decrypter
-            .decrypt_tx(self, tx, key.clone(), ibe_c, dec_c, mac_c)
+            .decrypt(self, tx, key.clone(), ibe_c, dec_c, mac_c)
             .unwrap();
 
         Ok(plain_tx)

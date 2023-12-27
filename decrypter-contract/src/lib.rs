@@ -30,10 +30,7 @@ use std::io::{Read, Write};
 /// Import the Stylus SDK along with alloy primitive types for use in our program.
 use stylus_sdk::{prelude::sol_storage, prelude::sol_interface, stylus_proc::{entrypoint, external}};
 
-// Define the entrypoint as a Solidity storage object, in this case a struct
-// called `Counter` with a single uint256 value called `number`. The sol_storage! macro
-// will generate Rust-equivalent structs with all fields mapped to Solidity-equivalent
-// storage slots and types.
+
 sol_storage! {
     #[entrypoint]
     #[derive( Clone,Copy)]
@@ -52,14 +49,13 @@ sol_interface! {
         function headerMac(uint8[] memory file_key, string calldata type_, string[] memory args, uint8[] memory body) external pure returns (uint8[] memory);
     }
 }
-/// Define an implementation of the generated Counter struct, defining a set_number
-/// and increment method using the features of the Stylus SDK.
+
 #[external]
 impl Decrypter {
    
-    pub fn decrypt_tx(&self, tx: Vec<u8>,  skbytes: Vec<u8>, ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20, mac_contract:IMacChacha20) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
+    pub fn decrypt(&self, c: Vec<u8>,  skbytes: Vec<u8>, ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20, mac_contract:IMacChacha20) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
         let sk = G2Affine::from_compressed(&skbytes.try_into().unwrap()).unwrap();
-        let mut cursor = Cursor::new(tx);
+        let mut cursor = Cursor::new(c);
         let decrypted = Decrypt(*self,&sk, &mut cursor, ibe_contract,decrypter_contract,mac_contract);
         Ok(decrypted)
     }
