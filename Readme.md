@@ -68,7 +68,7 @@ In order to test the functionality, a basic implementation of an auction contrac
 
 1. **Script for Simplification**: 
    - Location: `test-script` folder.
-   - Function: Automates the deployment of contracts, encryption of bids, and execution of test case.
+   - Function: Automates the deployment of contracts, encryption of bids, and execution of test case. This script gets the private key of a wallet as input. The wallet needs to have some stylus testnet tokens to be able to perform the contract developments and calls. To get the token, the testnet faucet at [Arbitrum Stylus Testnet Faucet](https://bwarelabs.com/faucets/arbitrum-stylus-testnet) can be used.
 
 2. **Pre-requisites**:
    - Repositories: `encrypter` and `ShareGenerator`.
