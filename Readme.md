@@ -54,12 +54,12 @@ In order to test the functionality, a basic implementation of an auction contrac
   - `uint8[] memory tx`: The encrypted bid data.
   - `string calldata condition`: The condition for bid submission.
 - **Returns**: `uint8[] memory`: The status of the bid submission.
-- **Usage**: Participants use this to submit their bids in encrypted form.
+- **Usage**: Participants use this to submit their bids in encrypted form. The condition is assumed to be the concatenation of the id and the deadline of the auction in this example contract.
 
 #### submitKey
 - **Function**: Submits the aggregated key for decrypting the bids.
 - **Parameters**: 
-  - `string calldata condition`: The condition which the key is calculated based on it.
+  - `string calldata condition`: The condition which the key is calculated based on it. 
   - `uint8[] memory key`: The aggregated decryption key.
 - **Returns**: `uint8[] memory`: The decrypted winner bid.
 - **Usage**: Used to decrypt the bids and determine the auction winner.
@@ -76,5 +76,5 @@ In order to test the functionality, a basic implementation of an auction contrac
 
 3. **Execution**:
    - The script initializes the `custom-contract`, submits an encrypted bid, submits the decryption key, and then retrieves the winning bid. These steps are included in the example code of the `test-script/custom-test`.
-   - Note: In the current test setup, only one bid is submitted, so the winner is the sole bidder.
+   - Note: In the current test setup, two bids are submitted. The bid values can be modified through changing the values on lines `81` and `83` of the `setup.sh` script. Moreover, the condition for the encryption and decryption is hardcoded as `1456` assuming the `id = 1` and `deadline = 456`. In order to modify this, the value should be changed on lines `75, 81, and 83` of the script. Also, on lines `106-107, 114, 120, and 126` of the example. (`test-script/custom-test/examples/counter.rs`) 
 

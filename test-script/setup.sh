@@ -78,11 +78,13 @@ key_share=$(echo "$output" | jq -r '.KeyShare')
 echo "key share : $key_share"
 cd ../encrypter
 
-cipher=$(./encrypter 1456 "$master_public_key" "124")
+cipher=$(./encrypter 1456 "$master_public_key" "125")
 echo "cipher: $cipher"
+cipher2=$(./encrypter 1456 "$master_public_key" "67")
+echo "cipher: $cipher2"
 
 #######
 
 cd ../ArbitrumContracts/test-script/custom-test
 
-RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressIbe" "$addressChachadec" "$addressChachamac" "$addressDec" "$cipher" "$key_share" "$sk"
+RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressIbe" "$addressChachadec" "$addressChachamac" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2"

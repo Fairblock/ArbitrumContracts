@@ -33,9 +33,9 @@ async fn main() -> eyre::Result<()> {
     let args: Vec<String> = env::args().collect();
 
     // Ensure there are enough arguments
-    if args.len() < 9 {
+    if args.len() < 10 {
         eprintln!(
-            "Usage: program program_address ibe_contract decrypter_contract mac_contract decrypter cipher sk wallet_key"
+            "Usage: program program_address ibe_contract decrypter_contract mac_contract decrypter cipher sk wallet_key cipher2"
         );
         std::process::exit(1);
     }
@@ -48,6 +48,8 @@ async fn main() -> eyre::Result<()> {
     let arg6 = &args[6];
     let arg7 = &args[7];
     let arg8 = &args[8];
+    let arg9 = &args[9];
+   
     let rpc_url = "https://stylus-testnet.arbitrum.io/rpc";
     let program_address = arg1.as_str();
     //"0x2Ce88343d8Df6614DEa8574E43E48A5641e10750";
@@ -70,6 +72,7 @@ async fn main() -> eyre::Result<()> {
     let address: Address = program_address.parse()?;
 
     let privkey = arg8.as_str();
+  
     //"0f5dbd99b4fb1a300ca068668f41178bed1062376c4c30a5e7957cfa27258323";
     let wallet = LocalWallet::from_str(&privkey)?;
     let chain_id = provider.get_chainid().await?.as_u64();
@@ -79,7 +82,7 @@ async fn main() -> eyre::Result<()> {
     ));
     
     let c = hex::decode(arg6).unwrap();
-  
+    let c2 = hex::decode(arg9).unwrap();
     let skbytes = hex::decode(arg7).unwrap();
 
     let ibe_contract: Address = arg2.parse()?;
@@ -114,10 +117,16 @@ async fn main() -> eyre::Result<()> {
 
     thread::sleep(Duration::from_secs(20));
 
-    let binding3 = custom.submit_key(String::from_str("1456").unwrap(), skbytes.to_vec());
-    let num2 = binding3.call().await?;
-    let string2 = String::from_utf8(num2.clone()).expect("Invalid UTF-8 sequence");
-    println!("highest bid = {:?}", string2);
+    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
+    let num2 = binding3.send().await?;
+    println!("tx = {:?}", num2);
+
+    thread::sleep(Duration::from_secs(20));
+
+    let binding4 = custom.submit_key(String::from_str("1456").unwrap(), skbytes.to_vec());
+    let num3 = binding4.call().await?;
+    let string3 = String::from_utf8(num3.clone()).expect("Invalid UTF-8 sequence");
+    println!("highest bid = {:?}", string3);
 
 
     Ok(())

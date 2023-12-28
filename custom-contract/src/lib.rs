@@ -84,7 +84,7 @@ impl Auction {
     }
 
     pub fn if_not_finished(&mut self) -> Result<(), AuctionError> {
-        if !self.finished.get() {
+        if self.finished.get() {
             return Err(AuctionError::AuctionEnded(AuctionEnded {}));
         }
 
@@ -154,11 +154,11 @@ impl Auction {
         tx: Vec<u8>,
         condition: String,
     ) -> Result<Vec<u8>, AuctionError> {
-        // self.if_initialized()?;
-        // self.if_not_finished()?;
-        // if msg::value() < *self.fee {
-        //     return Err(AuctionError::NotEnoughFee(NotEnoughFee {}));
-        // }
+        self.if_initialized()?;
+        self.if_not_finished()?;
+        if msg::value() < *self.fee {
+            return Err(AuctionError::NotEnoughFee(NotEnoughFee {}));
+        }
         let c = self.id.to_string() + &self.deadline.to_string();
         if condition == c {
             let mut inner_vec: StorageGuardMut<'_, EncBid> = self.bids.grow();
@@ -171,8 +171,8 @@ impl Auction {
     }
 
     pub fn submit_key(&mut self, condition: String, key: Vec<u8>) -> Result<Vec<u8>, AuctionError> {
-        // self.if_initialized()?;
-        // self.if_not_finished()?;
+        self.if_initialized()?;
+        self.if_not_finished()?;
         let mac_c = *self.mac_contract;
         let dec_c = *self.decrypter_contract;
         let ibe_c = *self.ibe_contract;
@@ -213,7 +213,7 @@ impl Auction {
         dec_c: Address,
         mac_c: Address,
     ) -> Result<Vec<u8>, Vec<u8>> {
-        //self.if_initialized()?;
+        self.if_initialized()?;
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
 
         let plain_tx = decrypter
