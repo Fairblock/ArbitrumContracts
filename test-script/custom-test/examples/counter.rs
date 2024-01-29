@@ -19,14 +19,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-/// Your private key file path.
-const ENV_PRIV_KEY_PATH: &str = "PRIV_KEY_PATH";
 
-/// Stylus RPC endpoint url.
-const ENV_RPC_URL: &str = "RPC_URL";
-
-/// Deployed pragram address.
-const ENV_PROGRAM_ADDRESS: &str = "STYLUS_PROGRAM_ADDRESS";
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -84,7 +77,7 @@ async fn main() -> eyre::Result<()> {
     let c = hex::decode(arg6).unwrap();
     let c2 = hex::decode(arg9).unwrap();
     let skbytes = hex::decode(arg7).unwrap();
-
+    let registry_contract: Address = "0x49589dE2cd3b1f91966dDFC4aB7c45fADeEd72A5".parse()?;
     let ibe_contract: Address = arg2.parse()?;
     //"0x891565D05F42946A1c720d041E4DF69D8D490f94".parse()?;
     let decrypter_contract: Address = arg3.parse()?;
@@ -98,7 +91,7 @@ async fn main() -> eyre::Result<()> {
     let custom = Auction::new(address, client);
 
     let binding = custom.set_vars(
-        ibe_contract,
+        registry_contract,
         decrypter,
         ibe_contract,
         decrypter_contract,
@@ -109,33 +102,31 @@ async fn main() -> eyre::Result<()> {
     );
     let _ = binding.send().await?;
 
-   thread::sleep(Duration::from_secs(10));
+//    thread::sleep(Duration::from_secs(10));
 
-    let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
-    let num = binding2.send().await?;
-    println!("tx = {:?}", num);
+//     let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
+//     let num = binding2.send().await?;
+//     println!("tx = {:?}", num);
 
-    thread::sleep(Duration::from_secs(20));
+//     thread::sleep(Duration::from_secs(20));
 
-    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
-    let num2 = binding3.send().await?;
-    println!("tx = {:?}", num2);
+//     let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
+//     let num2 = binding3.send().await?;
+//     println!("tx = {:?}", num2);
 
-    thread::sleep(Duration::from_secs(20));
+   
 
-    let binding4 = custom.submit_key(String::from_str("1456").unwrap(), skbytes.to_vec());
-    let num3 = binding4.call().await?;
-    let string3 = String::from_utf8(num3.clone()).expect("Invalid UTF-8 sequence");
-    println!("highest bid = {:?}", string3);
+
+    // ***** for standalone testing *****
+
+    //thread::sleep(Duration::from_secs(20));
+    // let binding4 = custom.submit_key(String::from_str("1456").unwrap(), skbytes.to_vec());
+    // let num3 = binding4.call().await?;
+    // let string3 = String::from_utf8(num3.clone()).expect("Invalid UTF-8 sequence");
+    // println!("highest bid = {:?}", string3);
 
 
     Ok(())
 }
 
-fn read_secret_from_file(fpath: &str) -> eyre::Result<String> {
-    let f = std::fs::File::open(fpath)?;
-    let mut buf_reader = BufReader::new(f);
-    let mut secret = String::new();
-    buf_reader.read_line(&mut secret)?;
-    Ok(secret.trim().to_string())
-}
+
