@@ -12,6 +12,7 @@ use ethers::{
     types::Address,
 };
 use eyre::eyre;
+use stylus_sdk::call::*;
 use std::env;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -42,10 +43,11 @@ async fn main() -> eyre::Result<()> {
     let arg7 = &args[7];
     let arg8 = &args[8];
     let arg9 = &args[9];
+    let arg10 = &args[10];
    
     let rpc_url = "https://stylus-testnet.arbitrum.io/rpc";
     let program_address = arg1.as_str();
-    //"0x2Ce88343d8Df6614DEa8574E43E48A5641e10750";
+   
     abigen!(
         Auction,
         r#"[
@@ -54,8 +56,14 @@ async fn main() -> eyre::Result<()> {
 
             function submitEncBid(uint8[] memory tx, string calldata condition) external returns (uint8[] memory)
         
-            function submitKey(string calldata condition, uint8[] memory key) external returns (uint8[] memory)
+            function submitKey(string calldata k) external returns (bool)
         
+   
+
+            function checkWinner() external returns (string memory)
+
+            function checkFinished() external returns (bool)
+
             function dec(uint8[] memory tx, uint8[] memory key, address ibe_c, address dec_c, address mac_c) external returns (uint8[] memory)
         ]"#
        
@@ -66,7 +74,7 @@ async fn main() -> eyre::Result<()> {
 
     let privkey = arg8.as_str();
   
-    //"0f5dbd99b4fb1a300ca068668f41178bed1062376c4c30a5e7957cfa27258323";
+    
     let wallet = LocalWallet::from_str(&privkey)?;
     let chain_id = provider.get_chainid().await?.as_u64();
     let client = Arc::new(SignerMiddleware::new(
@@ -77,17 +85,17 @@ async fn main() -> eyre::Result<()> {
     let c = hex::decode(arg6).unwrap();
     let c2 = hex::decode(arg9).unwrap();
     let skbytes = hex::decode(arg7).unwrap();
-    let registry_contract: Address = "0x49589dE2cd3b1f91966dDFC4aB7c45fADeEd72A5".parse()?;
+
+    let registry_contract: Address = arg10.parse()?;
+
     let ibe_contract: Address = arg2.parse()?;
-    //"0x891565D05F42946A1c720d041E4DF69D8D490f94".parse()?;
+   
     let decrypter_contract: Address = arg3.parse()?;
-    //"0x2F04Fb351a70a450Ac0B4a4593Ec07fF9849d410".parse()?;
+   
     let mac_contract: Address = arg4.parse()?;
-    //"0x047f15524c8cAbBb636F2a295222dc54224Ec37a".parse()?;
+  
     let decrypter: Address = arg5.parse()?;
-    //"0x5E5A1a7725A9FAA081FE6faABC036e9a5244D1F9".parse()?;
-    // 0x891565D05F42946A1c720d041E4DF69D8D490f94 // ibe
-    // 0x2F04Fb351a70a450Ac0B4a4593Ec07fF9849d410 // decrypter
+
     let custom = Auction::new(address, client);
 
     let binding = custom.set_vars(
@@ -102,28 +110,32 @@ async fn main() -> eyre::Result<()> {
     );
     let _ = binding.send().await?;
 
-//    thread::sleep(Duration::from_secs(10));
+   thread::sleep(Duration::from_secs(10));
+    let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
+    let num = binding2.send().await?;
+    println!("tx = {:?}", num);
+    
+    // thread::sleep(Duration::from_secs(20));
 
-//     let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
-//     let num = binding2.send().await?;
-//     println!("tx = {:?}", num);
+    // let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
+    // let num2 = binding3.send().await?;
+    // println!("tx = {:?}", num2);
 
-//     thread::sleep(Duration::from_secs(20));
 
-//     let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
-//     let num2 = binding3.send().await?;
-//     println!("tx = {:?}", num2);
 
-   
-
+ 
 
     // ***** for standalone testing *****
 
-    //thread::sleep(Duration::from_secs(20));
-    // let binding4 = custom.submit_key(String::from_str("1456").unwrap(), skbytes.to_vec());
-    // let num3 = binding4.call().await?;
-    // let string3 = String::from_utf8(num3.clone()).expect("Invalid UTF-8 sequence");
-    // println!("highest bid = {:?}", string3);
+    // thread::sleep(Duration::from_secs(20));
+    // let binding4 = custom.submit_key(arg7.to_string());
+    // let num3 = binding4.send().await?;
+    // println!("highest bid = {:?}", num3);
+
+    // thread::sleep(Duration::from_secs(20));
+    // let binding4 = custom.dec(c.to_vec(),skbytes.to_vec(),ibe_contract,decrypter_contract,mac_contract).gas(10000000);
+    // let num3 = binding4.send().await?;
+    // println!("highest bid = {:?}", num3);
 
 
     Ok(())

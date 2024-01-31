@@ -48,6 +48,8 @@ sol_storage! {
         address owner;
         bool finished;
         bool initialized;
+        StorageString winner_bid;
+        StorageString dec_key;
     }
 }
 sol! {
@@ -136,6 +138,8 @@ impl Auction {
         self.owner.set(msg::sender());
         self.initialized.set(true);
         self.finished.set(false);
+        self.winner_bid.set_str("0");
+        self.dec_key.set_str("0");
         let registry: IRegistry = IRegistry::new(*self.registry);
         let owner = self.owner.clone();
         let c = self.id.to_string() + &self.deadline.to_string();
@@ -174,40 +178,12 @@ impl Auction {
     }
 
     pub fn submit_key(&mut self, k: String) -> Result<bool, AuctionError> {
-        let key = k.into_bytes();
-        self.if_initialized()?;
-        self.if_not_finished()?;
-        let mac_c = *self.mac_contract;
-        let dec_c = *self.decrypter_contract;
-        let ibe_c = *self.ibe_contract;
-        let mut winner_bid: u128 = 0;
-        let mut winner: Address = Address::ZERO;
-        for i in 0..self.bids.len() {
-            
-            let enc = self.bids.get_mut(i).unwrap().tx_.get_bytes();
-            let sender = self.bids.get_mut(i).unwrap().sender.clone();
-            
-                let plain_bid = self.dec(enc, key.clone(), ibe_c, dec_c, mac_c).unwrap();
-               
-                let bid_string =
-                    String::from_utf8(plain_bid.clone()).expect("Invalid UTF-8 sequence");
-                let val = string_to_u128(bid_string.as_str()).unwrap();
-                if val > winner_bid {
-                    winner_bid = val;
-                    winner = sender;
-                    self.finished.set(true);
-                }
-            
-        }
-       
-        evm::log(AuctionWinner {
-            sender: winner.to_string(),
-            winner_bid: winner_bid.to_string(),
-        });
+        self.dec_key.set_str(k.clone());
+        self.finished.set(true);
         Ok(true)
     }
 
-    fn dec(
+    pub fn dec(
         &mut self,
         tx: Vec<u8>,
         key: Vec<u8>,
@@ -215,14 +191,21 @@ impl Auction {
         dec_c: Address,
         mac_c: Address,
     ) -> Result<Vec<u8>, Vec<u8>> {
-        self.if_initialized()?;
+       self.if_initialized()?;
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
-
+  
         let plain_tx = decrypter
-            .decrypt(self, tx, key.clone(), ibe_c, dec_c, mac_c)
-            .unwrap();
+            .decrypt(self, tx, key.clone(), ibe_c, dec_c, mac_c).is_ok();
 
-        Ok(plain_tx)
+        Ok(plain_tx.to_string().into_bytes().to_vec())
+    }
+
+    pub fn check_winner(&mut self) -> Result<String, Vec<u8>> {
+        return Ok(self.winner_bid.get_string());
+    }
+
+    pub fn check_finished(&mut self) -> Result<bool, Vec<u8>> {
+        return Ok(*self.finished);
     }
 }
 #[solidity_storage]
