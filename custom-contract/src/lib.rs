@@ -152,8 +152,9 @@ impl Auction {
             let c = self.id.to_string() + &self.deadline.to_string();
             return Ok(c);
         }
-        let c = self.id.to_string() + &self.deadline.to_string();
-        return Ok(c);
+        // let c = self.id.to_string() + &self.deadline.to_string();
+        // return Ok(c);
+        return Ok("".to_string());
     }
     #[payable]
     pub fn submit_enc_bid(
