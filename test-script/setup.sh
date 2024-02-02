@@ -94,21 +94,21 @@ key_share=$(echo "$output" | jq -r '.KeyShare')
 echo "key share : $key_share"
 cd ../encrypter
 
-cipher=$(./encrypter 1456 "$master_public_key" "125")
+cipher=$(./encrypter 1456 "$master_public_key" "171")
 echo "cipher: $cipher"
 cipher2=$(./encrypter 1456 "$master_public_key" "67")
 echo "cipher: $cipher2"
 
 #######
 
-addressIbe=0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC
-addressChachadec=0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f
-addressChachamac=0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc
-addressDec=0x16651b15030968B8D1485F605aE6F4293a3D332E
+# addressIbe=0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC
+# addressChachadec=0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f
+# addressChachamac=0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc
+addressDec=0x41f719b843f07808f9CC39BDF083fdb53c90808b
 
 cd ../ArbitrumContracts/test-script/custom-test
 
-RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressIbe" "$addressChachadec" "$addressChachamac" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
+RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
 ########
 

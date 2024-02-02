@@ -9,7 +9,7 @@ sol_interface! {
         function addContract(address addr_con, address addr_own, string calldata condition) external returns (uint256);
     }
     interface IDecrypter {
-        function decrypt(uint8[] memory c, uint8[] memory skbytes, address ibe_contract, address decrypter_contract, address mac_contract) external view returns (uint8[] memory);
+        function decrypt(uint8[] memory c, uint8[] memory skbytes) external view returns (uint8[] memory);
     }
 }
 use alloy_sol_types::SolError;
@@ -41,9 +41,7 @@ sol_storage! {
         uint id;
         StorageAddress registry;
         StorageAddress decrypter;
-        StorageAddress ibe_contract;
-        StorageAddress decrypter_contract;
-        StorageAddress mac_contract;
+   
         uint256 fee;
         address owner;
         bool finished;
@@ -114,9 +112,6 @@ impl Auction {
         &mut self,
         registry: Address,
         decrypter: Address,
-        ibe_contract: Address,
-        decrypter_contract: Address,
-        mac_contract: Address,
         deadline: u128,
         id: u128,
         fee: u128,
@@ -128,9 +123,6 @@ impl Auction {
         }
         self.registry.set(registry);
         self.decrypter.set(decrypter);
-        self.ibe_contract.set(ibe_contract);
-        self.decrypter_contract.set(decrypter_contract);
-        self.mac_contract.set(mac_contract);
         self.deadline.set(U256::from(deadline));
         self.id.set(U256::from(id));
         self.fee.set(U256::from(fee));
@@ -188,17 +180,14 @@ impl Auction {
         &mut self,
         tx: Vec<u8>,
         key: Vec<u8>,
-        ibe_c: Address,
-        dec_c: Address,
-        mac_c: Address,
     ) -> Result<Vec<u8>, Vec<u8>> {
        self.if_initialized()?;
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
   
         let plain_tx = decrypter
-            .decrypt(self, tx, key.clone(), ibe_c, dec_c, mac_c).is_ok();
+            .decrypt(self, tx, key.clone()).unwrap();
 
-        Ok(plain_tx.to_string().into_bytes().to_vec())
+        Ok(plain_tx)
     }
 
     pub fn check_winner(&mut self) -> Result<String, Vec<u8>> {

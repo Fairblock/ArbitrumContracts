@@ -27,9 +27,9 @@ async fn main() -> eyre::Result<()> {
     let args: Vec<String> = env::args().collect();
 
     // Ensure there are enough arguments
-    if args.len() < 10 {
+    if args.len() < 7 {
         eprintln!(
-            "Usage: program program_address ibe_contract decrypter_contract mac_contract decrypter cipher sk wallet_key cipher2"
+            "Usage: program program_address decrypter cipher sk wallet_key cipher2"
         );
         std::process::exit(1);
     }
@@ -41,9 +41,7 @@ async fn main() -> eyre::Result<()> {
     let arg5 = &args[5];
     let arg6 = &args[6];
     let arg7 = &args[7];
-    let arg8 = &args[8];
-    let arg9 = &args[9];
-    let arg10 = &args[10];
+   
    
     let rpc_url = "https://stylus-testnet.arbitrum.io/rpc";
     let program_address = arg1.as_str();
@@ -52,19 +50,19 @@ async fn main() -> eyre::Result<()> {
         Auction,
         r#"[
       
-        function setVars(address registry, address decrypter, address ibe_contract, address decrypter_contract, address mac_contract, uint128 deadline, uint128 id, uint128 fee) external
+        function setVars(address registry, address decrypter, uint128 deadline, uint128 id, uint128 fee) external
 
-            function submitEncBid(uint8[] memory tx, string calldata condition) external returns (uint8[] memory)
-        
-            function submitKey(string calldata k) external returns (bool)
-        
-   
-
-            function checkWinner() external returns (string memory)
-
-            function checkFinished() external returns (bool)
-
-            function dec(uint8[] memory tx, uint8[] memory key, address ibe_c, address dec_c, address mac_c) external returns (uint8[] memory)
+        function checkCondition() external returns (string memory)
+    
+        function submitEncBid(uint8[] memory tx, string calldata condition) external payable returns (uint8[] memory)
+    
+        function submitKey(string calldata k) external returns (bool)
+    
+        function dec(uint8[] memory tx, uint8[] memory key) external returns (uint8[] memory)
+    
+        function checkWinner() external returns (string memory)
+    
+        function checkFinished() external returns (bool)
         ]"#
        
     );
@@ -72,7 +70,7 @@ async fn main() -> eyre::Result<()> {
     let provider = Provider::<Http>::try_from(rpc_url)?;
     let address: Address = program_address.parse()?;
 
-    let privkey = arg8.as_str();
+    let privkey = arg5.as_str();
   
     
     let wallet = LocalWallet::from_str(&privkey)?;
@@ -82,28 +80,19 @@ async fn main() -> eyre::Result<()> {
         wallet.clone().with_chain_id(chain_id),
     ));
     
-    let c = hex::decode(arg6).unwrap();
-    let c2 = hex::decode(arg9).unwrap();
-    let skbytes = hex::decode(arg7).unwrap();
+    let c = hex::decode(arg3).unwrap();
+    let c2 = hex::decode(arg6).unwrap();
+    let skbytes = hex::decode(arg4).unwrap();
 
-    let registry_contract: Address = arg10.parse()?;
-
-    let ibe_contract: Address = arg2.parse()?;
-   
-    let decrypter_contract: Address = arg3.parse()?;
-   
-    let mac_contract: Address = arg4.parse()?;
+    let registry_contract: Address = arg7.parse()?;
   
-    let decrypter: Address = arg5.parse()?;
+    let decrypter: Address = arg2.parse()?;
 
     let custom = Auction::new(address, client);
 
     let binding = custom.set_vars(
         registry_contract,
         decrypter,
-        ibe_contract,
-        decrypter_contract,
-        mac_contract,
         456,
         1,
         0,
@@ -132,8 +121,8 @@ async fn main() -> eyre::Result<()> {
     // let num3 = binding4.send().await?;
     // println!("highest bid = {:?}", num3);
 
-    //thread::sleep(Duration::from_secs(20));
-    let binding4 = custom.dec(c.to_vec(),skbytes.to_vec(),ibe_contract,decrypter_contract,mac_contract).gas_price(100000000).gas(26000000);
+    thread::sleep(Duration::from_secs(20));
+    let binding4 = custom.dec(c.to_vec(),skbytes.to_vec()).gas_price(100000000).gas(29000000);
     let num3 = binding4.send().await?;
     println!("{:?}", num3);
 

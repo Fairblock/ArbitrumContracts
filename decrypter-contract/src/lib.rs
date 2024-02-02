@@ -53,10 +53,13 @@ sol_interface! {
 #[external]
 impl Decrypter {
    
-    pub fn decrypt(&self, c: Vec<u8>,  skbytes: Vec<u8>, ibe_contract : IIBE, decrypter_contract : IDecrypterChacha20, mac_contract:IMacChacha20) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
+    pub fn decrypt(&self, c: Vec<u8>,  skbytes: Vec<u8>) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
         let sk = G2Affine::from_compressed(&skbytes.try_into().unwrap()).unwrap();
         let mut cursor = Cursor::new(c);
-        let decrypted = Decrypt(*self,&sk, &mut cursor, ibe_contract,decrypter_contract,mac_contract);
+        let ibe_contract: Address = Address::from_str("0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC").unwrap();
+        let decrypter_contract: Address =Address::from_str("0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f").unwrap();
+        let mac_contract: Address =Address::from_str("0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc").unwrap();
+        let decrypted = Decrypt(*self,&sk, &mut cursor, IIBE { address: ibe_contract },IDecrypterChacha20 { address: decrypter_contract },IMacChacha20 { address: mac_contract });
         Ok(decrypted)
     }
 
