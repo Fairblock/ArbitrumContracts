@@ -92,11 +92,7 @@ impl Registry {
         if rs != "" {
             s = true;
         }
-        evm::log(ExecuteContract {
-            contract: contract.address,
-            satisfaction: s,
-            condition: rs.clone(),
-        });
+    
         Ok(rs)
     }
 

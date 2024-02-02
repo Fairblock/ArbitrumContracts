@@ -132,10 +132,10 @@ async fn main() -> eyre::Result<()> {
     // let num3 = binding4.send().await?;
     // println!("highest bid = {:?}", num3);
 
-    // thread::sleep(Duration::from_secs(20));
-    // let binding4 = custom.dec(c.to_vec(),skbytes.to_vec(),ibe_contract,decrypter_contract,mac_contract).gas(10000000);
-    // let num3 = binding4.send().await?;
-    // println!("highest bid = {:?}", num3);
+    //thread::sleep(Duration::from_secs(20));
+    let binding4 = custom.dec(c.to_vec(),skbytes.to_vec(),ibe_contract,decrypter_contract,mac_contract).gas_price(100000000).gas(26000000);
+    let num3 = binding4.send().await?;
+    println!("{:?}", num3);
 
 
     Ok(())
