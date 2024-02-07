@@ -116,6 +116,9 @@ In order to test the functionality, a basic implementation of an auction contrac
    - Note: In the current test setup, two bids are submitted. The bid values can be modified through changing the values on lines `97` and `99` of the `setup.sh` script. Moreover, the condition for the encryption and decryption is hardcoded as `1456` assuming the `id = 1` and `deadline = 456`. In order to modify this, the value should be changed on lines `91, 97, and 99` of the script. Also, on lines `107-108, 114, and 120` of the example. (`test-script/custom-test/examples/counter.rs`) 
 
 ### Benchmarking
-The gas requirements for decrypting different data sizes on are represented below.
+The gas requirements for decrypting different data sizes on are represented below:
+
+on-chain decryption:
 ![Required Gas for Different Data Sizes (on-chain decryption)](./gas-on.png)
+off-chain decryption and on-chain submission of plain data:
 ![Required Gas for Different Data Sizes (off-chain decryption and on-chain submission of plain data)](./gas-off.png)
