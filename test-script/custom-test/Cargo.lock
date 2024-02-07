@@ -2967,9 +2967,11 @@ version = "0.1.5"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",
+ "digest",
  "ethers",
  "eyre",
  "hex",
+ "sha2",
  "stylus-sdk",
  "tokio",
  "wee_alloc",
