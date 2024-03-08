@@ -14,7 +14,7 @@ sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
 
 ####### first time use only for deploying the required contracts
 
-# cd ../ibe-contract
+# cd ../ibe-contract-precompile-call
 
 # cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
