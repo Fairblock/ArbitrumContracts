@@ -1,6 +1,6 @@
 #read -p "Enter the wallet private key: " sk
 sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
-# #######
+# ####### first time use only for deploying the required contracts
 
 # cd ../ibe-contract-hashing
 
@@ -12,17 +12,7 @@ sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
 
 # echo "ibe-contract-hashing address: $addressIbeHashing" 
 
-# ########
-# cd ../ibe-contract-pairing
-
-# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
-
-# outputIbepairing=$(cargo-stylus stylus deploy -e http://localhost:8547 --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
-
-# addressIbepairing=$(echo "$outputIbepairing" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
-
-# echo "ibe-contract-pairing address: $addressIbepairing" 
-#######
+####### first time use only for deploying the required contracts
 
 # cd ../ibe-contract
 
@@ -34,7 +24,7 @@ sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
 
 # echo "ibe-contract address: $addressIbe" 
 
-# ########
+# ######## first time use only for deploying the required contracts
 
 # cd ../chacha20-contract-decrypter
 
@@ -46,7 +36,7 @@ sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
 
 # echo "chacha20-contract-decrypter address: $addressChachadec"
 
-# ########
+# ######## first time use only for deploying the required contracts
 
 # cd ../chacha20-contract-mac
 
@@ -123,17 +113,12 @@ echo "cipher: $cipher2"
 
 #######
 
-# addressIbe=0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC
-# addressChachadec=0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f
-# addressChachamac=0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc
-#addressDec=0x41f719b843f07808f9CC39BDF083fdb53c90808b
-#addresscustom=0x44314E30540454Feb57a965De2E368b1D9d9c020
-#addressregistry=0x620F73c3388B0868D5153b9120713195e3af3fd8
+
 cd ../ArbitrumContracts/test-script/custom-test
 
 RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
-# ########
+# ######## for testing with fairyring and client
 
 # # cd ../../../fairyring
 

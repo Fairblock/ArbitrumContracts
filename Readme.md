@@ -130,3 +130,18 @@ The graph below shows the gas requirements for decrypting different data sizes d
 In contrast, the following graph presents the gas requirements when decryption is performed off the blockchain, with only the resulting plain data being submitted on-chain. 
 
 ![Required Gas for Different Data Sizes (off-chain decryption and on-chain submission of plain data)](./gas-off.png)
+
+
+### Local Stylus testing with custom precompile for bls12-381 pairing
+
+In order to test using the local stylus with the pairing precompile, clone the modified version of stylus from `git@github.com:Fairblock/local_stylus.git`. 
+Then rename the `contracts-modified` folder to `contracts`.
+To run the chain, follow the below instructions inside the stylus directory:
+
+```sh
+cd nitro-testnode/
+./test-node.bash --init --dev --blockscout
+```
+Once the chain is running, first, deploy the contracts using the commented lines on the `test-script/setup-local.sh` script.
+Then replace the hardcoded addresses on lines 60-62 and 293 of `decrypter-contract/src/lib.rs` with the new addresses.(No need to modify the pairing contract address as it will not be used.)
+Then use the `test-script/setup-local.sh` script to perform a test.
