@@ -116,7 +116,7 @@ echo "cipher: $cipher2"
 
 cd ../ArbitrumContracts/test-script/custom-test
 
-RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
+RUST_BACKTRACE=1 cargo run --example local --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
 # ######## for testing with fairyring and client
 
