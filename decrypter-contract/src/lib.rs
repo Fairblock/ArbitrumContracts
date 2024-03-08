@@ -6,6 +6,9 @@ extern crate alloc;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+use alloy_primitives::U256;
+use stylus_sdk::{prelude::sol_storage, prelude::sol_interface,call::RawCall, stylus_proc::{entrypoint, external}};
+
 use base64::{engine::general_purpose, write::EncoderWriter, Engine};
 use std::{io::Cursor, str::FromStr};
 use bls12_381_plus::{G1Affine, G2Affine};
@@ -28,7 +31,7 @@ use std::io::{self, BufRead, BufReader};
 use std::io::{Read, Write};
 
 /// Import the Stylus SDK along with alloy primitive types for use in our program.
-use stylus_sdk::{prelude::sol_storage, prelude::sol_interface, stylus_proc::{entrypoint, external}};
+//use stylus_sdk::{prelude::sol_storage, prelude::sol_interface, stylus_proc::{entrypoint, external}};
 
 
 sol_storage! {
@@ -55,15 +58,22 @@ impl Decrypter {
    
     pub fn decrypt(&self, c: Vec<u8>,  skbytes: Vec<u8>) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
         let sk = G2Affine::from_compressed(&skbytes.try_into().unwrap()).unwrap();
+    
         let mut cursor = Cursor::new(c);
-        let ibe_contract: Address = Address::from_str("0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC").unwrap();
-        let decrypter_contract: Address =Address::from_str("0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f").unwrap();
-        let mac_contract: Address =Address::from_str("0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc").unwrap();
+        let ibe_contract: Address = Address::from_str("0x0702AA6Ec5fbC66a4CcdDaaa9B29CB667F6528e3").unwrap();
+        let decrypter_contract: Address =Address::from_str("0x84401CD7AbBeBB22ACb7aF2beCfd9bE56C30bcf1").unwrap();
+        let mac_contract: Address =Address::from_str("0x79b994D378518EAe46917Aa19F05cE6545fAAc26").unwrap();
+       
+       // let input = [180,94,231,64,60,139,63,77,251,219,173,163,74,124,6,10,129,139,151,186,102,134,86,99,150,127,59,169,18,212,67,132,48,180,58,172,181,219,30,166,33,104,186,198,23,29,20,141,15,107,179,56,147,33,220,105,191,20,32,206,3,203,206,179,228,207,247,100,37,47,155,29,212,118,240,159,79,249,88,182,208,106,20,154,236,61,92,86,122,253,31,5,161,65,125,200,132,219,183,104,17,129,230,157,183,26,153,233,66,115,68,164,71,138,139,41,17,243,198,239,54,161,137,27,46,107,79,207,238,92,105,66,202,66,80,46,175,230,252,126,199,130,246,13];
+       
+    
+
+    
         let decrypted = Decrypt(*self,&sk, &mut cursor, IIBE { address: ibe_contract },IDecrypterChacha20 { address: decrypter_contract },IMacChacha20 { address: mac_contract });
         Ok(decrypted)
-    }
+    
 
-}
+}}
 
 // Constants
 const INTRO: &str = "age-encryption.org/v1";
@@ -236,7 +246,7 @@ pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_con
     // let stanzas_slice = &stanzas[..];
 
     let file_key = unwrap(dec, sk, &[*hdr.recipients[0].clone()],ibe_contract);
-
+    
     let mac = mac_contract.header_mac(&dec,file_key.clone(),hdr.recipients[0].clone().type_,hdr.recipients[0].clone().args,hdr.recipients[0].clone().body).unwrap();
    
     if mac != hdr.mac {
@@ -309,11 +319,12 @@ fn unlock(
     ibe_contract: IIBE
 ) -> Vec<u8> {
     //todo
+    
    // let return_data = call(Call::new_in(storage), Address::default(), &[0u8]).unwrap();
     //    let data = decrypt(*signature, ciphertext);
    // function decrypt(uint8[96] calldata private, uint8[] memory cv, uint8[] memory cw, uint8[] memory cu, address pairing_contract, address hasher_contract) external view returns (uint8[] memory);
-   let pairing_contract_addr: Address = Address::from_str("0x3cBf6b597De34F1559abFb16FD7Fe744d6b89713").unwrap();
-   let hasher_contract_addr: Address =Address::from_str("0x5414210Fe884C561D3AF2c92D71166282d7f50fb").unwrap();
+   let pairing_contract_addr: Address = Address::from_str("0x84401CD7AbBeBB22ACb7aF2beCfd9bE56C30bcf1").unwrap();
+   let hasher_contract_addr: Address =Address::from_str("0x4De74F7B2a30a1Ee39b374f6F11859c334234A79").unwrap();
     let data = ibe_contract.decrypt(&dec,signature.to_compressed().to_vec(),ciphertext.v.clone(),ciphertext.w.clone(),ciphertext.u.to_compressed().to_vec(),pairing_contract_addr, hasher_contract_addr).unwrap();
     data
 }

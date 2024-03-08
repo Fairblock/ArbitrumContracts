@@ -504,6 +504,8 @@ name = "stylus-bls"
 version = "0.1.5"
 dependencies = [
  "ic_bls12_381",
+ "pairing",
+ "rand_core",
  "stylus-sdk",
  "wee_alloc",
 ]

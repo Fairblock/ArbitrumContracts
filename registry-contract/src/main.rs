@@ -87,11 +87,6 @@ impl Registry {
     fn check_condition_proxy(&mut self, _contract: Address) -> Result<String, Vec<u8>> {
         let contract: IContract = IContract::new(_contract);
         let rs = contract.check_condition(self).unwrap();
-
-        let mut s = false;
-        if rs != "" {
-            s = true;
-        }
     
         Ok(rs)
     }

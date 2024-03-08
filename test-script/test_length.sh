@@ -38,15 +38,15 @@ sk=c1f754ce022376d07cf5af49d4432212f07fa802f204960cd76bda5ac12ef8ea
 
 # #######
 
-# cd ../decrypter-contract
+cd ../decrypter-contract
 
-# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
+cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
-# outputDec=$(cargo-stylus stylus deploy   --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/decrypter.wasm)
+outputDec=$(cargo-stylus stylus deploy   --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/decrypter.wasm)
 
-# addressDec=$(echo "$outputDec" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
+addressDec=$(echo "$outputDec" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
 
-# echo "decrypter-contract address: $addressDec"
+echo "decrypter-contract address: $addressDec"
 
 #######
 
@@ -62,20 +62,20 @@ echo "hash-auction-contract address: $addresscustom"
 
 #######
 
-cd ../registry-contract
+# cd ../registry-contract
 
-cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
+# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
-outputregistry=$(cargo-stylus stylus deploy   --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/registry.wasm)
+# outputregistry=$(cargo-stylus stylus deploy   --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/registry.wasm)
 
-addressregistry=$(echo "$outputregistry" | grep "Deploying program to address" | awk '{print $5}'| sed 's/\x1b\[[0-9;]*m//g')
+# addressregistry=$(echo "$outputregistry" | grep "Deploying program to address" | awk '{print $5}'| sed 's/\x1b\[[0-9;]*m//g')
 
-echo "registry-contract address: $addressregistry"
+# echo "registry-contract address: $addressregistry"
 
-CONFIG_FILE="../../fairybridge/config.toml"
+# CONFIG_FILE="../../fairybridge/config.toml"
 
-sed -i "s/registry_address = \".*\"/registry_address = \"$addressregistry\"/" $CONFIG_FILE
-sed -i "s/arbitrum_key = \".*\"/arbitrum_key = \"$sk\"/" $CONFIG_FILE
+# sed -i "s/registry_address = \".*\"/registry_address = \"$addressregistry\"/" $CONFIG_FILE
+# sed -i "s/arbitrum_key = \".*\"/arbitrum_key = \"$sk\"/" $CONFIG_FILE
 #######
 
 sleep 5
@@ -100,15 +100,16 @@ cipher2=$(./encrypter 1456 "$master_public_key" "67")
 echo "cipher: $cipher2"
 
 #######
-
+#addresscustom=0xbA0683A185f456AD7AeCb16fBF1b5835515ef598
+addressregistry=0xb0aC23b333e8F50dD6cb7ABBb46Ed67c3543FAD8
 # addressIbe=0xE9d3Ad58d2d697B08B2ce777541Ddf30F1f060EC
 # addressChachadec=0x438cc3c7E2Da22D897Ac8b5dc9509628B67EA13f
 # addressChachamac=0x73c90f1B5c1DE9c73e4c68E6e1D4Ad7E48C5a7Fc
-addressDec=0xd5Acef4B7f1372C8bb8315fb38b38F7DDbbC8dc5
+#addressDec=0x36811CBAb450261d5DABCFc12d6Ef691bdf1D8C4
 
 cd ../ArbitrumContracts/test-script/custom-test
 
-RUST_BACKTRACE=1 cargo run --example benchmark --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
+RUST_BACKTRACE=1 cargo run --example datalength --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
 ########
 

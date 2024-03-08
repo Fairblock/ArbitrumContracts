@@ -7,13 +7,19 @@ extern crate alloc;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-
+// mod pairing;
+// use alloc::vec::Vec;
+// // use bls12_381_plus::G1Affine;
 
 use alloc::vec::Vec;
-// use bls12_381_plus::G1Affine;
-use ic_bls12_381::{G1Affine, G2Affine, pairing};
-
-
+// mod fp12;
+// mod fp6;
+// mod fp2;
+// mod fp;
+// mod util;
+// mod subtle;
+// use pairing::{G1Affine, G2Affine};
+use ic_bls12_381::{G1Affine,G2Affine,pairing};
 /// Import the Stylus SDK along with alloy primitive types for use in our program.
 use stylus_sdk::{prelude::sol_storage, stylus_proc::{entrypoint, external}};
 
@@ -36,11 +42,12 @@ impl IBEPairing {
     pub fn pairing(&self, private: Vec<u8>, cu : Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error>{
 
      
-            let cu = G1Affine::from_compressed(&cu.try_into().unwrap()).unwrap();
+            let _cu = G1Affine::from_compressed(&cu.clone().try_into().unwrap()).unwrap();
+            
             let pr = G2Affine::from_compressed(&private.try_into().unwrap()).unwrap();
             //let prepared = G2Prepared::from(pr);
-            let r_gid = pairing(&cu, &pr);
-       
+          //  let r_gid = pairing(&cu, &pr);
+            let r_gid =  pairing(&_cu, &pr);
             Ok(r_gid.to_bytes().to_vec())
     
    

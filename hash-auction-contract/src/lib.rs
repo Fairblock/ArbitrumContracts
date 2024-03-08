@@ -26,7 +26,7 @@ use stylus_sdk::{
 
 use sha2::{Sha256, Digest};
 use hex_literal::hex;
-use stylus_sdk::call::{StaticCallContext};
+use stylus_sdk::call::{Call, CallContext, StaticCallContext};
 fn sha256_of_string(input: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(input);
@@ -191,15 +191,11 @@ impl Auction {
     }
     pub fn decrypt(&mut self, key: Vec<u8>, i : u128) -> Result<bool, AuctionError >{
         
-           
-            let enc = self.bids.get_mut(i).unwrap().tx_.get_bytes();
+         
+            let enc = self.bids.get_mut(0).unwrap().tx_.get_bytes();
             let data = self.dec(enc, key.clone()).unwrap();
             
-            let data_str = String::from_utf8(data).unwrap();
-            if sha256_of_string(&data_str).eq(&self.bids.get_mut(i).unwrap().hash.get_string()){
-                self.bids.get_mut(i).unwrap().plain_tx.set_str(data_str.clone());
-                
-            }
+           
             return Ok(true);
     }
     pub fn submit_decrypted(&mut self, data: Vec<String>) -> Result<bool, AuctionError >{
@@ -210,20 +206,25 @@ impl Auction {
         }}
         return Ok(true)
     }
+    
     pub fn dec(
         &mut self,
         tx: Vec<u8>,
         key: Vec<u8>,
     ) -> Result<Vec<u8>, Vec<u8>> {
-    
-       self.if_initialized()?;
+        let mut x = evm::gas_left().to_string();
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
-        // let config = StaticCallContext::new().gas(evm::gas_left() / 2)     
-        // .value(msg::value());   
+        // let c = Call::new_in(self).gas(26000000);
         let plain_tx = decrypter
-            .decrypt(self, tx, key.clone()).unwrap();
-
-        Ok(plain_tx)
+            .decrypt(self, tx.clone(), key.clone()).unwrap();
+        
+        let x2 = evm::gas_left().to_string();
+       
+        // let c2 = Call::new_in(self).gas(evm::gas_left());
+        // let plain_tx2 = decrypter
+        // .decrypt(c2, tx, key.clone()).unwrap();
+        x.push_str(&x2);
+        Ok((plain_tx))
     }
 
     pub fn check_winner(&mut self) -> Result<String, Vec<u8>> {
