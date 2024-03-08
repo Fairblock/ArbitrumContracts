@@ -1,9 +1,3 @@
-//! Example on how to interact with a deployed `stylus-hello-world` program using defaults.
-//! This example uses ethers-rs to instantiate the program using a Solidity ABI.
-//! Then, it attempts to check the current counter value, increment it via a tx,
-//! and check the value again. The deployed program is fully written in Rust and compiled to WASM
-//! but with Stylus, it is accessible just as a normal Solidity smart contract is via an ABI.
-
 use ethers::{
     middleware::SignerMiddleware,
     prelude::abigen,
@@ -98,34 +92,12 @@ async fn main() -> eyre::Result<()> {
         0,
     );
     let _ = binding.send().await?;
-
-//    thread::sleep(Duration::from_secs(10));
-//     let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
-//     let num = binding2.send().await?;
-//     println!("tx = {:?}", num);
-    
-    // thread::sleep(Duration::from_secs(20));
-
-    // let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
-    // let num2 = binding3.send().await?;
-    // println!("tx = {:?}", num2);
-
-
-
- 
-
-    // ***** for standalone testing *****
-
-    // thread::sleep(Duration::from_secs(20));
-    // let binding4 = custom.submit_key(arg7.to_string());
-    // let num3 = binding4.send().await?;
-    // println!("highest bid = {:?}", num3);
-
+    // test the decryption with the precompiled pairing
     thread::sleep(Duration::from_secs(20));
     let binding4 = custom.dec(c.to_vec(),skbytes.to_vec()).gas(50000000);
     let num3 = binding4.send().await?;
     println!("{:?}", num3);
-//http://localhost:4000/tx/0x61eb8b8725b4887938f734354291f238d846d7d6517b76b77f3a055168bda630/internal-transactions
+
 
     Ok(())
 }

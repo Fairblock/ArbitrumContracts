@@ -1,4 +1,25 @@
 read -p "Enter the wallet private key: " sk
+##########
+# cd ../ibe-contract-hashing
+
+# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
+
+# outputIbeHashing=$(cargo-stylus stylus deploy --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
+
+# addressIbeHashing=$(echo "$outputIbeHashing" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
+
+# echo "ibe-contract-hashing address: $addressIbeHashing" 
+
+# ########
+# cd ../ibe-contract-pairing
+
+# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
+
+# outputIbepairing=$(cargo-stylus stylus deploy --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
+
+# addressIbepairing=$(echo "$outputIbepairing" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
+
+# echo "ibe-contract-pairing address: $addressIbepairing" 
 
 # #######
 
@@ -108,7 +129,7 @@ addressDec=0x41f719b843f07808f9CC39BDF083fdb53c90808b
 
 cd ../ArbitrumContracts/test-script/custom-test
 
-RUST_BACKTRACE=1 cargo run --example counter --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
+RUST_BACKTRACE=1 cargo run --example testnet --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
 ########
 

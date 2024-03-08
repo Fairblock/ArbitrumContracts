@@ -13,6 +13,7 @@ use ethers::{
 };
 use eyre::eyre;
 use stylus_sdk::call::*;
+
 use std::env;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -118,12 +119,12 @@ let N = 1;
     let _ = binding2.send().await?;
     }
 
-for i in 0..N{
-    thread::sleep(Duration::from_secs(20));
-    let binding4 = custom.decrypt(skbytes.to_vec(), i).gas_price(100000000).gas(40000000);
-    let num3 = binding4.send().await?;
-    println!("decrypt on chain : {:?}", num3);
-}
+
+    // thread::sleep(Duration::from_secs(10));
+    // let binding4 = custom.dec(c.to_vec(), skbytes.to_vec()).gas(60000000);
+    // let num3 = binding4.send().await?;
+    // println!("decrypt on chain : {:?}", num3);
+
 
     let mut data  : Vec<String> = vec![]; 
     for i in 0..N{

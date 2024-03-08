@@ -9,7 +9,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 use sha2::Digest;
 
-// use bls12_381_plus::G1Affine;
+
 use ic_bls12_381::{Scalar,G1Projective,G1Affine};
 
 use num_bigint::{BigInt, Sign};
@@ -17,10 +17,7 @@ use num_bigint::{BigInt, Sign};
 /// Import the Stylus SDK along with alloy primitive types for use in our program.
 use stylus_sdk::{prelude::sol_storage, stylus_proc::{entrypoint, external}};
 
-// Define the entrypoint as a Solidity storage object, in this case a struct
-// called `Counter` with a single uint256 value called `number`. The sol_storage! macro
-// will generate Rust-equivalent structs with all fields mapped to Solidity-equivalent
-// storage slots and types.
+
 sol_storage! {
     #[entrypoint]
     pub struct Hasher {
@@ -28,8 +25,7 @@ sol_storage! {
     }
 }
 
-/// Define an implementation of the generated Counter struct, defining a set_number
-/// and increment method using the features of the Stylus SDK.
+
 #[external]
 
 impl Hasher {

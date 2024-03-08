@@ -18,8 +18,7 @@ use stylus_sdk::{
     call::{call, Call},
   contract::address,
 };
-// use std::io::{Error, ErrorKind};
-// mod ibe;
+
 
 
 use hkdf::Hkdf;
@@ -30,8 +29,6 @@ use sha2::Sha256;
 use std::io::{self, BufRead, BufReader};
 use std::io::{Read, Write};
 
-/// Import the Stylus SDK along with alloy primitive types for use in our program.
-//use stylus_sdk::{prelude::sol_storage, prelude::sol_interface, stylus_proc::{entrypoint, external}};
 
 
 sol_storage! {
@@ -63,12 +60,6 @@ impl Decrypter {
         let ibe_contract: Address = Address::from_str("0x0702AA6Ec5fbC66a4CcdDaaa9B29CB667F6528e3").unwrap();
         let decrypter_contract: Address =Address::from_str("0x84401CD7AbBeBB22ACb7aF2beCfd9bE56C30bcf1").unwrap();
         let mac_contract: Address =Address::from_str("0x79b994D378518EAe46917Aa19F05cE6545fAAc26").unwrap();
-       
-       // let input = [180,94,231,64,60,139,63,77,251,219,173,163,74,124,6,10,129,139,151,186,102,134,86,99,150,127,59,169,18,212,67,132,48,180,58,172,181,219,30,166,33,104,186,198,23,29,20,141,15,107,179,56,147,33,220,105,191,20,32,206,3,203,206,179,228,207,247,100,37,47,155,29,212,118,240,159,79,249,88,182,208,106,20,154,236,61,92,86,122,253,31,5,161,65,125,200,132,219,183,104,17,129,230,157,183,26,153,233,66,115,68,164,71,138,139,41,17,243,198,239,54,161,137,27,46,107,79,207,238,92,105,66,202,66,80,46,175,230,252,126,199,130,246,13];
-       
-    
-
-    
         let decrypted = Decrypt(*self,&sk, &mut cursor, IIBE { address: ibe_contract },IDecrypterChacha20 { address: decrypter_contract },IMacChacha20 { address: mac_contract });
         Ok(decrypted)
     
@@ -213,19 +204,7 @@ impl Write for HmacWriter {
         Ok(())
     }
 }
-// Additional helper functions and modules (like 'armor' and 'parse') would be needed based on the actual 'ibe' package
 
-// fn header_mac(file_key: &[u8], hdr: &Header) -> Vec<u8> {
-//     let h = Hkdf::<Sha256>::new(None, file_key);
-//     let mut hmac_key = [0u8; 32];
-//     let _ = h.expand(b"header", &mut hmac_key);
-
-//     let hh = Hmac::<Sha256>::new_from_slice(&hmac_key).expect("HMAC can take key of any size");
-//     let mut hmac_writer = HmacWriter::new(hh.clone());
-//     let _ =  hdr.marshal_without_mac(&mut hmac_writer);
-
-//     hh.finalize().into_bytes().to_vec()
-// }
 
 #[derive( Clone, Deserialize)]
 struct Stanza {
@@ -238,13 +217,6 @@ pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_con
     // Parsing header and payload
     let (hdr, mut payload) = parse(src).unwrap();
 
-    // let mut stanzas: Vec<Stanza> = Vec::with_capacity(hdr.recipients.len());
-    // for s in &hdr.recipients {
-    //     stanzas.push(*s.clone()); // Assuming Stanza can be cloned
-    // }
-
-    // let stanzas_slice = &stanzas[..];
-
     let file_key = unwrap(dec, sk, &[*hdr.recipients[0].clone()],ibe_contract);
     
     let mac = mac_contract.header_mac(&dec,file_key.clone(),hdr.recipients[0].clone().type_,hdr.recipients[0].clone().args,hdr.recipients[0].clone().body).unwrap();
@@ -255,9 +227,8 @@ pub fn Decrypt<'a>(dec : Decrypter, sk: &G2Affine, src: &'a mut dyn Read,ibe_con
     let mut nonce = vec![0u8; 16];
 
     payload.read_exact(&mut nonce).unwrap(); // Handle potential errors properly
-     //todo
-                                             // Creating a decrypted data stream
-                                             //
+    
+                                
     let mut s: Vec<u8> = vec![0];
     let _ = payload.read_to_end(&mut s);
     // call new_reader or decrypter
@@ -318,11 +289,6 @@ fn unlock(
     ciphertext: &Ciphertext,
     ibe_contract: IIBE
 ) -> Vec<u8> {
-    //todo
-    
-   // let return_data = call(Call::new_in(storage), Address::default(), &[0u8]).unwrap();
-    //    let data = decrypt(*signature, ciphertext);
-   // function decrypt(uint8[96] calldata private, uint8[] memory cv, uint8[] memory cw, uint8[] memory cu, address pairing_contract, address hasher_contract) external view returns (uint8[] memory);
    let pairing_contract_addr: Address = Address::from_str("0x84401CD7AbBeBB22ACb7aF2beCfd9bE56C30bcf1").unwrap();
    let hasher_contract_addr: Address =Address::from_str("0x4De74F7B2a30a1Ee39b374f6F11859c334234A79").unwrap();
     let data = ibe_contract.decrypt(&dec,signature.to_compressed().to_vec(),ciphertext.v.clone(),ciphertext.w.clone(),ciphertext.u.to_compressed().to_vec(),pairing_contract_addr, hasher_contract_addr).unwrap();

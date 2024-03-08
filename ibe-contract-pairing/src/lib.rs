@@ -7,26 +7,13 @@ extern crate alloc;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// mod pairing;
-// use alloc::vec::Vec;
-// // use bls12_381_plus::G1Affine;
-
 use alloc::vec::Vec;
-// mod fp12;
-// mod fp6;
-// mod fp2;
-// mod fp;
-// mod util;
-// mod subtle;
-// use pairing::{G1Affine, G2Affine};
+
 use ic_bls12_381::{G1Affine,G2Affine,pairing};
-/// Import the Stylus SDK along with alloy primitive types for use in our program.
+
 use stylus_sdk::{prelude::sol_storage, stylus_proc::{entrypoint, external}};
 
-// Define the entrypoint as a Solidity storage object, in this case a struct
-// called `Counter` with a single uint256 value called `number`. The sol_storage! macro
-// will generate Rust-equivalent structs with all fields mapped to Solidity-equivalent
-// storage slots and types.
+
 sol_storage! {
     #[entrypoint]
     pub struct IBEPairing {
@@ -34,8 +21,7 @@ sol_storage! {
     }
 }
 
-/// Define an implementation of the generated Counter struct, defining a set_number
-/// and increment method using the features of the Stylus SDK.
+
 #[external]
 impl IBEPairing {
    
@@ -43,10 +29,8 @@ impl IBEPairing {
 
      
             let _cu = G1Affine::from_compressed(&cu.clone().try_into().unwrap()).unwrap();
-            
             let pr = G2Affine::from_compressed(&private.try_into().unwrap()).unwrap();
-            //let prepared = G2Prepared::from(pr);
-          //  let r_gid = pairing(&cu, &pr);
+
             let r_gid =  pairing(&_cu, &pr);
             Ok(r_gid.to_bytes().to_vec())
     

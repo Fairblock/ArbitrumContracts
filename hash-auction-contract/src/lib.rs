@@ -212,18 +212,12 @@ impl Auction {
         tx: Vec<u8>,
         key: Vec<u8>,
     ) -> Result<Vec<u8>, Vec<u8>> {
-        let mut x = evm::gas_left().to_string();
+
         let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
-        // let c = Call::new_in(self).gas(26000000);
+
         let plain_tx = decrypter
             .decrypt(self, tx.clone(), key.clone()).unwrap();
-        
-        let x2 = evm::gas_left().to_string();
-       
-        // let c2 = Call::new_in(self).gas(evm::gas_left());
-        // let plain_tx2 = decrypter
-        // .decrypt(c2, tx, key.clone()).unwrap();
-        x.push_str(&x2);
+   
         Ok((plain_tx))
     }
 
