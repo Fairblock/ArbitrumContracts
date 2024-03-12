@@ -44,13 +44,13 @@ async fn main() -> eyre::Result<()> {
         Auction,
         r#"[
       
-        function setVars(address registry, address decrypter, uint128 deadline, uint128 id, uint128 fee) external
+        function setVars(address registry, uint128 deadline, uint128 id, uint128 fee) external
 
         function checkCondition() external returns (string memory)
     
         function submitEncBid(uint8[] memory tx, string calldata condition) external payable returns (uint8[] memory)
     
-        function submitKey(string calldata k) external returns (bool)
+        function submitKey(string calldata k) external returns (uint8[] memory)
     
         function dec(uint8[] memory tx, uint8[] memory key) external returns (uint8[] memory)
     
@@ -86,19 +86,34 @@ async fn main() -> eyre::Result<()> {
 
     let binding = custom.set_vars(
         registry_contract,
-        decrypter,
         456,
         1,
         0,
     );
     let _ = binding.send().await?;
+
+    thread::sleep(Duration::from_secs(10));
+    let binding2 = custom.submit_enc_bid(c.clone().to_vec(), String::from_str("1456").unwrap());
+    let num = binding2.send().await?;
+    println!("tx = {:?}", num);
+    
+    thread::sleep(Duration::from_secs(20));
+
+    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
+    let num2 = binding3.send().await?;
+    println!("tx = {:?}", num2);
+
+
     // test the decryption with the precompiled pairing
     thread::sleep(Duration::from_secs(20));
-    let binding4 = custom.dec(c.to_vec(),skbytes.to_vec()).gas(50000000);
+    let binding4 = custom.submit_key(arg4.to_string()).gas(50000000);
     let num3 = binding4.send().await?;
     println!("{:?}", num3);
+    thread::sleep(Duration::from_secs(10));
 
-
+    let binding5 = custom.check_winner().gas(50000000);
+    let num4 = binding5.call().await?;
+    println!("{:?}", num4);
     Ok(())
 }
 

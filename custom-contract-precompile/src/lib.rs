@@ -8,12 +8,14 @@ sol_interface! {
     interface IRegistry {
         function addContract(address addr_con, address addr_own, string calldata condition) external returns (uint256);
     }
-    interface IDecrypter {
-        function decrypt(uint8[] memory c, uint8[] memory skbytes) external view returns (uint8[] memory);
-    }
+
 }
+use std::str::FromStr;
+
 use alloy_sol_types::SolError;
+use ethabi::Token;
 use stylus_sdk::block;
+use stylus_sdk::call::RawCall;
 use stylus_sdk::{
     alloy_primitives::*,
     alloy_sol_types::{sol, SolEvent},
@@ -40,7 +42,6 @@ sol_storage! {
         uint deadline;
         uint id;
         StorageAddress registry;
-        StorageAddress decrypter;
    
         uint256 fee;
         address owner;
@@ -111,7 +112,6 @@ impl Auction {
     pub fn set_vars(
         &mut self,
         registry: Address,
-        decrypter: Address,
         deadline: u128,
         id: u128,
         fee: u128,
@@ -122,7 +122,7 @@ impl Auction {
             ));
         }
         self.registry.set(registry);
-        self.decrypter.set(decrypter);
+     
         self.deadline.set(U256::from(deadline));
         self.id.set(U256::from(id));
         self.fee.set(U256::from(fee));
@@ -144,9 +144,10 @@ impl Auction {
             let c = self.id.to_string() + &self.deadline.to_string();
             return Ok(c);
         }
+        // For testing purposes
         // let c = self.id.to_string() + &self.deadline.to_string();
         // return Ok(c);
-        return Ok("".to_string());
+      return Ok("".to_string());
     }
     #[payable]
     pub fn submit_enc_bid(
@@ -171,9 +172,35 @@ impl Auction {
     }
 
     pub fn submit_key(&mut self, k: String) -> Result<Vec<u8>, AuctionError> {
-        self.dec_key.set_str(k.clone());
-        self.finished.set(true);
-        Ok(vec![])
+        let key =  hex::decode(k).unwrap();
+        self.if_initialized()?;
+        self.if_not_finished()?;
+    
+        let mut winner_bid: u128 = 0;
+        let mut winner: Address = Address::ZERO;
+        for i in 0..self.bids.len() {
+
+            let enc = self.bids.get_mut(i).unwrap().tx_.get_bytes();
+            let sender = self.bids.get_mut(i).unwrap().sender.clone();
+           
+                let plain_bid = self.dec(enc, key.clone()).unwrap();
+            
+                let bid_string =
+                    String::from_utf8(plain_bid.clone()).expect("Invalid UTF-8 sequence");
+                let val = string_to_u128(bid_string.as_str()).unwrap();
+                if val > winner_bid {
+                    winner_bid = val;
+                    winner = sender;
+                    self.finished.set(true);
+                }
+
+        }
+        self.winner_bid.set_str(winner_bid.to_string());
+        evm::log(AuctionWinner {
+            sender: winner.to_string(),
+            winner_bid: winner_bid.to_string(),
+        });
+        return Ok(winner_bid.to_string().as_bytes().to_vec())
     }
 
     pub fn dec(
@@ -181,13 +208,18 @@ impl Auction {
         tx: Vec<u8>,
         key: Vec<u8>,
     ) -> Result<Vec<u8>, Vec<u8>> {
-       self.if_initialized()?;
-        let decrypter: IDecrypter = IDecrypter::new(*self.decrypter);
-  
-        let plain_tx = decrypter
-            .decrypt(self, tx, key.clone()).unwrap();
-
-        Ok(plain_tx)
+   
+    let input = encode_function(key, tx.clone());
+      
+    let plain = RawCall::new_static()
+        .call(
+            Address::from_str("0x0000000000000000000000000000000000000094").unwrap(),
+            &input,
+        )
+        .unwrap();
+ 
+     let p= plain[64..64+plain[63] as usize].to_vec();
+        Ok(p)
     }
 
     pub fn check_winner(&mut self) -> Result<String, Vec<u8>> {
@@ -209,4 +241,19 @@ fn string_to_u128(s: &str) -> Result<u128, String> {
         Ok(num) => Ok(num),
         Err(e) => Err(e.to_string()),
     }
+}
+
+fn encode_function(privateKeyByte: Vec<u8>,cipherBytes: Vec<u8> )-> Vec<u8>{
+    let function_signature: [u8; 4] = [0x98, 0xfe, 0x9d, 0xfb];
+    // Prepare the inputs as Tokens
+    let inputs: Vec<Token> = vec![Token::Bytes(privateKeyByte), Token::Bytes(cipherBytes)];
+
+    // Encode the inputs with the function signature
+    let mut encoded = function_signature.to_vec();
+    let encoded_params = ethabi::encode(&inputs);
+
+    // Combine the function signature with the encoded parameters
+    encoded.extend_from_slice(&encoded_params);
+
+    encoded
 }

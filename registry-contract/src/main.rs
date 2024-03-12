@@ -30,7 +30,7 @@ sol_storage! {
 sol_interface! {
     interface IContract {
         function checkCondition() external returns (string memory);
-        function submitKey(string calldata k) external returns (bool);
+        function submitKey(string calldata k) external returns (uint8[] memory);
     }
 }
 
@@ -91,7 +91,7 @@ impl Registry {
         Ok(rs)
     }
 
-    fn send_key(&mut self, key: String, id: String) -> Result<bool, Vec<u8>> {
+    fn send_key(&mut self, key: String, id: String) -> Result<Vec<u8>, Vec<u8>> {
         let mut _address = Address::ZERO;
         for i in 0..self.list.len() {
             unsafe {

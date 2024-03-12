@@ -50,19 +50,19 @@ sk=0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659
 
 # #######
 
-cd ../decrypter-contract
+# cd ../decrypter-contract
 
-cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
+# cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
-outputDec=$(cargo-stylus stylus deploy -e http://localhost:8547  --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/decrypter.wasm)
+# outputDec=$(cargo-stylus stylus deploy -e http://localhost:8547  --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/decrypter.wasm)
 
-addressDec=$(echo "$outputDec" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
+# addressDec=$(echo "$outputDec" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
 
-echo "decrypter-contract address: $addressDec"
+# echo "decrypter-contract address: $addressDec"
 
 #######
 
-cd ../custom-contract
+cd ../custom-contract-precompile
 
 cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
@@ -106,25 +106,25 @@ key_share=$(echo "$output" | jq -r '.KeyShare')
 echo "key share : $key_share"
 cd ../encrypter
 
-cipher=$(./encrypter 1456 "$master_public_key" "171")
+cipher=$(./encrypter 1456 "$master_public_key" "177")
 echo "cipher: $cipher"
-cipher2=$(./encrypter 1456 "$master_public_key" "67")
+cipher2=$(./encrypter 1456 "$master_public_key" "212")
 echo "cipher: $cipher2"
 
 #######
-
-
+# addressregistry=0x4BA06cCa2841E08333BB914cf01f0776946B3cA8
+addressDec=0x4BA06cCa2841E08333BB914cf01f0776946B3cA8
 cd ../ArbitrumContracts/test-script/custom-test
 
 RUST_BACKTRACE=1 cargo run --example local --target=x86_64-unknown-linux-gnu "$addresscustom" "$addressDec" "$cipher" "$key_share" "$sk" "$cipher2" "$addressregistry"
 
 # ######## for testing with fairyring and client
 
-# # cd ../../../fairyring
+cd ../../../fairyring
 
-# # echo 1 | ./start-fairy.sh > fairylog.txt & cd ../fairybridge
+echo 1 | ./start-fairy.sh > fairylog.txt & cd ../fairybridge
 
 # # ########
-# # sleep 10
+sleep 10
 
-# # cargo run --target x86_64-unknown-linux-gnu
+cargo run --target x86_64-unknown-linux-gnu
