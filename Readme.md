@@ -132,7 +132,7 @@ In contrast, the following graph presents the gas requirements when decryption i
 ![Required Gas for Different Data Sizes (off-chain decryption and on-chain submission of plain data)](./gas-off.png)
 
 
-### Local Stylus testing with custom precompile for bls12-381 pairing
+### Local Stylus testing with custom precompile for decryption
 
 In order to test using the local stylus with the pairing precompile, clone the modified version of stylus from `git@github.com:Fairblock/local_stylus.git`. 
 Then rename the `contracts-modified` folder to `contracts`.
@@ -142,6 +142,10 @@ To run the chain, follow the below instructions inside the stylus directory:
 cd nitro-testnode/
 ./test-node.bash --init --dev --blockscout
 ```
-Once the chain is running, first, deploy the contracts using the commented lines on the `test-script/setup-local.sh` script.
-Then replace the hardcoded addresses on lines 60-62 and 293 of `decrypter-contract/src/lib.rs` with the new addresses.(No need to modify the pairing contract address as it will not be used.)
-Then use the `test-script/setup-local.sh` script to perform a test.
+Once the chain is running, first, deploy the registry contract using the commented lines on the `test-script/setup-registry.sh` script.
+Then, run the `test-script/bridge-fairyring.sh` to setup the fairyring and the bridge. The fairyring will have one validator `star` by default. 
+Then use the `test-script/setup-local.sh` script to deploy the custom contract and perform a test. The test first registers the custom contract in the registry contract. Then, submits two ciphertexts each encryption a bid value to the custom contract. Note that for simplicity, the keyshare and MPK values are currently hardcoded in the script.
+After running the test, the new contract will be seen in the logs of the bridge meaning that it is monitored and once the condition is met, a key request tx will be sent to the fairyring. ( in the test case, the custom contract will immediately claim that the condition has been met while in the real use case, it might require some time until the condition is met)
+In the test example, for simplicity, there is only one validator submitting the decryption key. After the key submission, the bridge will notice the key and relay it to the custom contract through the registry contract. The current custom contract is implemented so that the key submission function will decrypt all ciphertexts and return the winning bid. 
+
+

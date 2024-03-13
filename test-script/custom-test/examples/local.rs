@@ -13,6 +13,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use log::*;
 
 
 
@@ -83,37 +84,39 @@ async fn main() -> eyre::Result<()> {
     let decrypter: Address = arg2.parse()?;
 
     let custom = Auction::new(address, client);
-
+    env_logger::init();
+    log::info!("Registering the custom contract...");
     let binding = custom.set_vars(
         registry_contract,
         456,
         1,
         0,
     );
-    let _ = binding.send().await?;
-
+    let n = binding.send().await?;
+    log::info!("Registered through the tx = {:?}", n);
+    log::info!("Submitting the first ciphertext...");
     thread::sleep(Duration::from_secs(10));
     let binding2 = custom.submit_enc_bid(c.clone().to_vec(), String::from_str("1456").unwrap());
     let num = binding2.send().await?;
-    println!("tx = {:?}", num);
-    
+    log::info!("submited through tx = {:?}", num);
+    log::info!("Submitting the second ciphertext...");
     thread::sleep(Duration::from_secs(20));
 
     let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
     let num2 = binding3.send().await?;
-    println!("tx = {:?}", num2);
+    log::info!("submited through tx = {:?}", num2);
 
 
     // test the decryption with the precompiled pairing
-    thread::sleep(Duration::from_secs(20));
-    let binding4 = custom.submit_key(arg4.to_string()).gas(50000000);
-    let num3 = binding4.send().await?;
-    println!("{:?}", num3);
-    thread::sleep(Duration::from_secs(10));
+    // thread::sleep(Duration::from_secs(20));
+    // let binding4 = custom.submit_key(arg4.to_string()).gas(50000000);
+    // let num3 = binding4.send().await?;
+    // println!("{:?}", num3);
+    // thread::sleep(Duration::from_secs(10));
 
-    let binding5 = custom.check_winner().gas(50000000);
-    let num4 = binding5.call().await?;
-    println!("{:?}", num4);
+    // let binding5 = custom.check_winner().gas(50000000);
+    // let num4 = binding5.call().await?;
+    // println!("{:?}", num4);
     Ok(())
 }
 

@@ -18,7 +18,7 @@ use stylus_sdk::block;
 use stylus_sdk::call::RawCall;
 use stylus_sdk::{
     alloy_primitives::*,
-    alloy_sol_types::{sol, SolEvent},
+    alloy_sol_types::{sol},
     contract::address,
     evm, msg,
     prelude::*,
@@ -116,7 +116,7 @@ impl Auction {
         id: u128,
         fee: u128,
     ) -> Result<(), AuctionError> {
-        if (self.initialized.get()) {
+        if self.initialized.get() {
             return Err(AuctionError::OwnerAlreadyInitialized(
                 OwnerAlreadyInitialized {},
             ));
@@ -140,14 +140,14 @@ impl Auction {
     }
 
     pub fn check_condition(&mut self) -> Result<String, Vec<u8>> {
-        if block::timestamp().to_string() == self.deadline.to_string() {
-            let c = self.id.to_string() + &self.deadline.to_string();
-            return Ok(c);
-        }
+        // if block::timestamp().to_string() == self.deadline.to_string() {
+        //     let c = self.id.to_string() + &self.deadline.to_string();
+        //     return Ok(c);
+        // }
         // For testing purposes
-        // let c = self.id.to_string() + &self.deadline.to_string();
-        // return Ok(c);
-      return Ok("".to_string());
+        let c = self.id.to_string() + &self.deadline.to_string();
+        return Ok(c);
+    //   return Ok("".to_string());
     }
     #[payable]
     pub fn submit_enc_bid(
@@ -191,10 +191,11 @@ impl Auction {
                 if val > winner_bid {
                     winner_bid = val;
                     winner = sender;
-                    self.finished.set(true);
+                    
                 }
 
         }
+        self.finished.set(true);
         self.winner_bid.set_str(winner_bid.to_string());
         evm::log(AuctionWinner {
             sender: winner.to_string(),

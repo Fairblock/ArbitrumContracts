@@ -14,7 +14,8 @@ alloy-sol-types = "0.3.1"
 stylus-sdk = "0.4.1"
 hex = "0.4.3"
 wee_alloc = "0.4.5"
-
+log="0.4.21"
+env_logger = "0.11.3"
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }
 ethers = "2.0"
