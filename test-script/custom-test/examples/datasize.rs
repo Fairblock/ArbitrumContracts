@@ -114,7 +114,7 @@ async fn main() -> eyre::Result<()> {
    
     thread::sleep(Duration::from_secs(10));
     let hash = sha256_of_string(plain);
-    let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap(),hash);
+    let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("14-56").unwrap(),hash);
     let _ = binding2.send().await?;
     
    

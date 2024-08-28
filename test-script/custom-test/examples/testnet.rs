@@ -37,26 +37,17 @@ async fn main() -> eyre::Result<()> {
     let arg7 = &args[7];
    
    
-    let rpc_url = "https://stylus-testnet.arbitrum.io/rpc";
+    let rpc_url = "https://sepolia-rollup.arbitrum.io/rpc";
     let program_address = arg1.as_str();
    
     abigen!(
-        Auction,
+        IBE,
         r#"[
       
-        function setVars(address registry, address decrypter, uint128 deadline, uint128 id, uint128 fee) external
-
-        function checkCondition() external returns (string memory)
     
-        function submitEncBid(uint8[] memory tx, string calldata condition) external payable returns (uint8[] memory)
+     function decrypt(uint8[] memory private, uint8[] memory cu, address pairing_contract) external view returns (string memory)
     
-        function submitKey(string calldata k) external returns (bool)
-    
-        function dec(uint8[] memory tx, uint8[] memory key) external returns (uint8[] memory)
-    
-        function checkWinner() external returns (string memory)
-    
-        function checkFinished() external returns (bool)
+      
         ]"#
        
     );
@@ -78,47 +69,17 @@ async fn main() -> eyre::Result<()> {
     let c2 = hex::decode(arg6).unwrap();
     let skbytes = hex::decode(arg4).unwrap();
 
-    let registry_contract: Address = arg7.parse()?;
-  
-    let decrypter: Address = arg2.parse()?;
-
-    let custom = Auction::new(address, client);
-
-    let binding = custom.set_vars(
-        registry_contract,
-        decrypter,
-        456,
-        1,
-        0,
-    );
-    let _ = binding.send().await?;
-
-   thread::sleep(Duration::from_secs(10));
-    let binding2 = custom.submit_enc_bid(c.to_vec(), String::from_str("1456").unwrap());
-    let num = binding2.send().await?;
-    println!("tx = {:?}", num);
+    let decrypter_adr: Address = "0x7324de0d624ea2a147c76e3a6f81155558033237".parse()?;
+    let pairing_contract_addr: Address = Address::from_str("0xbdb3a69bd70cded40a2cd449779dec4983c3569d").unwrap();
+    let decrypter = IBE::new(decrypter_adr, client);
+    let binding4 = decrypter.decrypt(skbytes,c,pairing_contract_addr).gas_price(100000000).gas(29000000);
+    let num3 = binding4.call().await?;
+    let bytes: Vec<u8> = num3.bytes().collect();
     
-    thread::sleep(Duration::from_secs(20));
+    // Filter out the null bytes and retain only significant bytes
+    let significant_bytes: Vec<u8> = bytes.into_iter().filter(|&b| b != 0).collect();
 
-    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
-    let num2 = binding3.send().await?;
-    println!("tx = {:?}", num2);
-
-
-
- 
-
-    // ***** for standalone testing *****
-
-    // thread::sleep(Duration::from_secs(20));
-    // let binding4 = custom.submit_key(arg7.to_string());
-    // let num3 = binding4.send().await?;
-    // println!("highest bid = {:?}", num3);
-
-    // thread::sleep(Duration::from_secs(20));
-    // let binding4 = custom.dec(c.to_vec(),skbytes.to_vec()).gas_price(100000000).gas(29000000);
-    // let num3 = binding4.send().await?;
-    // println!("{:?}", num3);
+    println!("{:?}", significant_bytes);
 
 
     Ok(())

@@ -10,7 +10,7 @@ description = "Stylus hello world example"
 
 [dependencies]
 
-stylus-sdk = {version= "0.4.1", default-features = false}
+stylus-sdk = {version= "0.5.2", default-features = false}
 
 
 serde = { version = "1.0",  default-features = false, features = ["derive"] }

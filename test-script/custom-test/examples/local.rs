@@ -96,13 +96,13 @@ async fn main() -> eyre::Result<()> {
     log::info!("Registered through the tx = {:?}", n);
     log::info!("Submitting the first ciphertext...");
     thread::sleep(Duration::from_secs(10));
-    let binding2 = custom.submit_enc_bid(c.clone().to_vec(), String::from_str("1456").unwrap());
+    let binding2 = custom.submit_enc_bid(c.clone().to_vec(), String::from_str("14-56").unwrap());
     let num = binding2.send().await?;
     log::info!("submited through tx = {:?}", num);
     log::info!("Submitting the second ciphertext...");
     thread::sleep(Duration::from_secs(20));
 
-    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("1456").unwrap());
+    let binding3 = custom.submit_enc_bid(c2.to_vec(), String::from_str("14-56").unwrap());
     let num2 = binding3.send().await?;
     log::info!("submited through tx = {:?}", num2);
 

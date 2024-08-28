@@ -6,7 +6,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 sol_interface! {
     interface IRegistry {
-        function addContract(address addr_con, address addr_own, string calldata condition) external returns (uint256);
+        function addContract(address addr_con, address addr_own, string calldata id) external returns (uint256);
     }
 
 }
@@ -134,19 +134,19 @@ impl Auction {
         self.dec_key.set_str("0");
         let registry: IRegistry = IRegistry::new(*self.registry);
         let owner = self.owner.clone();
-        let c = self.id.to_string() + &self.deadline.to_string();
-        let _ = registry.add_contract(self, address(), owner,c);
+       
+        let _ = registry.add_contract(self, address(), owner,id.to_string());
         Ok(())
     }
 
-    pub fn check_condition(&mut self) -> Result<String, Vec<u8>> {
+    pub fn check_condition(&mut self) -> Result<Vec<String>, Vec<u8>> {
         // if block::timestamp().to_string() == self.deadline.to_string() {
         //     let c = self.id.to_string() + &self.deadline.to_string();
         //     return Ok(c);
         // }
         // For testing purposes
-        let c = self.id.to_string() + &self.deadline.to_string();
-        return Ok(c);
+        let c = self.id.to_string() +"-"+ &self.deadline.to_string();
+        return Ok(vec![c]);
     //   return Ok("".to_string());
     }
     #[payable]
@@ -160,7 +160,7 @@ impl Auction {
         if msg::value() < *self.fee {
             return Err(AuctionError::NotEnoughFee(NotEnoughFee {}));
         }
-        let c = self.id.to_string() + &self.deadline.to_string();
+        let c = self.id.to_string() + "-" + &self.deadline.to_string();
         if condition == c {
             let mut inner_vec: StorageGuardMut<'_, EncBid> = self.bids.grow();
             inner_vec.tx_.set_bytes(tx);
@@ -171,7 +171,7 @@ impl Auction {
         return Err(AuctionError::ConditionNotMatched(ConditionNotMatched {}));
     }
 
-    pub fn submit_key(&mut self, k: String) -> Result<Vec<u8>, AuctionError> {
+    pub fn submit_key(&mut self, k: String, condition: String) -> Result<Vec<u8>, AuctionError> {
         let key =  hex::decode(k).unwrap();
         self.if_initialized()?;
         self.if_not_finished()?;
@@ -179,8 +179,10 @@ impl Auction {
         let mut winner_bid: u128 = 0;
         let mut winner: Address = Address::ZERO;
         for i in 0..self.bids.len() {
-
+            let c = self.bids.get_mut(i).unwrap().condition.get_string();
+            if c == condition{
             let enc = self.bids.get_mut(i).unwrap().tx_.get_bytes();
+            
             let sender = self.bids.get_mut(i).unwrap().sender.clone();
            
                 let plain_bid = self.dec(enc, key.clone()).unwrap();
@@ -192,7 +194,7 @@ impl Auction {
                     winner_bid = val;
                     winner = sender;
                     
-                }
+                }}
 
         }
         self.finished.set(true);
@@ -229,6 +231,12 @@ impl Auction {
 
     pub fn check_finished(&mut self) -> Result<bool, Vec<u8>> {
         return Ok(*self.finished);
+    }
+    pub fn check_deadline(&mut self) -> Result<String, Vec<u8>> {
+        return Ok(self.deadline.to_string());
+    }
+    pub fn check_id(&mut self) -> Result<String, Vec<u8>> {
+        return Ok(self.id.to_string());
     }
 }
 #[solidity_storage]

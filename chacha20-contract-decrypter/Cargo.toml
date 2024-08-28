@@ -10,11 +10,11 @@ description = "Stylus hello world example"
 
 [dependencies]
 
-stylus-sdk = "0.4.1"
+stylus-sdk = "0.5.2"
 bls12_381_plus = { version = "0.7.0", default-features = false, features = ["groups", "alloc", "experimental"]}
 
 serde = { version = "1.0", features = ["derive"] }
-
+hex = "0.4.3"
 base64 = "0.13"
 
 hkdf = {version = "0.11", default-features = false}
@@ -27,6 +27,11 @@ chacha20poly1305 = {version = "0.9.1", default-features = false, features = ["al
 
 wee_alloc = "0.4.5"
 # arbitrum-dec = { path = "../arbitrum-dec" }
+[dev-dependencies]
+tokio = { version = "1.12.0", features = ["full"] }
+ethers = { version = "2.0.14", features = ["openssl"] }
+eyre = "0.6.8"
+ethabi={version = "18.0.0", default-features = false}
 
 
 [features]

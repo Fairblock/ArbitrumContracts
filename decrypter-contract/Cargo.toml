@@ -9,32 +9,29 @@ keywords = ["arbitrum", "ethereum", "stylus", "alloy"]
 description = "Stylus hello world example"
 
 [dependencies]
-
-stylus-sdk = {version = "0.4.1", default-features = false}
-bls12_381_plus = { version = "0.7.0", default-features = false, features = ["groups"]}
+stylus-sdk = { version = "0.5.0", features = ["docs"] }
+bls12_381_plus = { version = "0.8.17", default-features = false, features = ["groups"]}
 #ic_bls12_381 = {version = "0.8.0", default-features = false, features = ["groups"]}
 serde = { version = "1.0", features = ["derive"] }
-alloy-primitives = "0.3.1"
-alloy-sol-types = "0.3.1"
-base64 = "0.21.4"
-
-hkdf = {version = "0.11", default-features = false}
-
-hmac = {version = "0.11", default-features = false}
-sha2 = {version = "0.9", default-features = false}
 
 
+base64 = {version = "0.22.1"}
 
-wee_alloc = "0.4.5"
+
+ethabi={version = "18.0.0", default-features = false}
+
+sha2 = {version = "0.10.8", default-features = false}
+
+
+
+wee_alloc = {version = "0.4.5", default-features = false}
 # arbitrum-dec = { path = "../arbitrum-dec" }
 
-[dev-dependencies]
-tokio = { version = "1.12.0", features = ["full"] }
-ethers = "2.0"
-eyre = "0.6.8"
 
 [features]
 export-abi = ["stylus-sdk/export-abi"]
+
+
 
 [[bin]]
 name = "decrypter"
@@ -52,3 +49,17 @@ debug = false            # no debug data
 rpath = false            # no run-time search path
 debug-assertions = false # prune debug assertions
 incremental = false      # no incremental builds
+
+
+[toolchain]
+channel = "1.80.1"  # Specify the exact Rust version
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+
+[lib]
+crate-type = ["cdylib"]
+
+
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os", "--enable-reference-types"]

@@ -20,8 +20,8 @@ sol_storage! {
     pub struct Contract {
         StorageAddress contract_address;
         StorageAddress owner;
-        uint256 id;
-        StorageString condition;
+        StorageString id;
+        
     }
 
 
@@ -29,8 +29,8 @@ sol_storage! {
 
 sol_interface! {
     interface IContract {
-        function checkCondition() external returns (string memory);
-        function submitKey(string calldata k) external returns (uint8[] memory);
+        function checkCondition() external returns (string[] memory);
+        function submitKey(string calldata k, string calldata condition) external returns (uint8[] memory);
     }
 }
 
@@ -41,7 +41,7 @@ sol! {
 
 #[external]
 impl Registry {
-    fn get_contract(&self, addr: Address) -> Result<(Address, U256), Vec<u8>> {
+    fn get_contract(&self, addr: Address) -> Result<(Address, String), Vec<u8>> {
         let mut index: usize = 0;
         for i in 0..self.list.len() {
             if *self.list.get(i).unwrap().contract_address == addr {
@@ -49,7 +49,7 @@ impl Registry {
             }
         }
         let c = &self.list.get(index).unwrap();
-        Ok((*c.owner, *c.id))
+        Ok((*c.owner, c.id.get_string()))
     }
     fn get_all_contracts(&self) -> Result<Vec<Address>, Vec<u8>> {
         let mut address_list = vec![];
@@ -64,7 +64,7 @@ impl Registry {
         &mut self,
         addr_con: Address,
         addr_own: Address,
-        condition: String,
+        id: String
     ) -> Result<U256, Vec<u8>> {
         let mut id_count = self.count.get();
         id_count = id_count + U256::from(1);
@@ -72,9 +72,9 @@ impl Registry {
         self.count.set(id_count);
         let mut inner_vec: StorageGuardMut<'_, Contract> = self.list.grow();
         inner_vec.contract_address.set(addr_con);
-        inner_vec.condition.set_str(condition);
+       
         inner_vec.owner.set(addr_own);
-        inner_vec.id.set(id_count);
+        inner_vec.id.set_str(id);
 
         evm::log(RegisterContract {
             owner: addr_own,
@@ -84,7 +84,7 @@ impl Registry {
         Ok(id_count)
     }
 
-    fn check_condition_proxy(&mut self, _contract: Address) -> Result<String, Vec<u8>> {
+    fn check_condition_proxy(&mut self, _contract: Address) -> Result<Vec<String>, Vec<u8>> {
         let contract: IContract = IContract::new(_contract);
         let rs = contract.check_condition(self).unwrap();
     
@@ -93,17 +93,24 @@ impl Registry {
 
     fn send_key(&mut self, key: String, id: String) -> Result<Vec<u8>, Vec<u8>> {
         let mut _address = Address::ZERO;
-        for i in 0..self.list.len() {
-            unsafe {
-                if self.list.get(i).unwrap().into_raw().condition.get_string() == id {
-                    _address = *self.list.get(i).unwrap().contract_address;
-                    break;
+        match id.find('-') {
+            Some(index) => {
+                let contract_id = &id[0..index];
+                for i in 0..self.list.len() {
+                    unsafe {
+                        if self.list.get(i).unwrap().into_raw().id.get_string() == contract_id {
+                            _address = *self.list.get(i).unwrap().contract_address;
+                            break;
+                        }
+                    }
                 }
-            }
+            },
+            None => return Ok(vec![]),
         }
+        
        
         let c = IContract::new(_address);
-        let res = c.submit_key(self, key);
+        let res = c.submit_key(self, key, id);
         Ok(res.unwrap())
     }
 }

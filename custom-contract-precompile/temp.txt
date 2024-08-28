@@ -1,0 +1,28 @@
+warning: file `/home/setareh/job/arbitrum/ArbitrumContracts/custom-contract-precompile/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `custom`
+  * `bin` target `custom`
+warning: unused import: `stylus_sdk::block`
+  --> src/lib.rs:17:5
+   |
+17 | use stylus_sdk::block;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: variable `privateKeyByte` should have a snake case name
+   --> src/lib.rs:255:20
+    |
+255 | fn encode_function(privateKeyByte: Vec<u8>,cipherBytes: Vec<u8> )-> Vec<u8>{
+    |                    ^^^^^^^^^^^^^^ help: convert the identifier to snake case: `private_key_byte`
+    |
+    = note: `#[warn(non_snake_case)]` on by default
+
+warning: variable `cipherBytes` should have a snake case name
+   --> src/lib.rs:255:44
+    |
+255 | fn encode_function(privateKeyByte: Vec<u8>,cipherBytes: Vec<u8> )-> Vec<u8>{
+    |                                            ^^^^^^^^^^^ help: convert the identifier to snake case: `cipher_bytes`
+
+warning: `custom` (lib) generated 3 warnings (run `cargo fix --lib -p custom` to apply 1 suggestion)
+warning: `custom` (bin "custom") generated 3 warnings (3 duplicates)
+    Finished release [optimized] target(s) in 0.21s

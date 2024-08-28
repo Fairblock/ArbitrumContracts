@@ -7,7 +7,7 @@ export RUST_LOG=info
 
 # cargo +nightly build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --config "profile.release.opt-level='z'" --release > /dev/null
 
-# outputIbeHashing=$(cargo-stylus stylus deploy -e http://localhost:8547 --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
+# outputIbeHashing=$(cargo-stylus stylus deploy -e http://localhost:4785 --private-key="$sk"  --wasm-file-path=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
 
 # addressIbeHashing=$(echo "$outputIbeHashing" | grep "Deploying program to address" | awk '{print $5}' | sed 's/\x1b\[[0-9;]*m//g')
 
@@ -101,18 +101,18 @@ output=$(./ShareGenerator generate 1 1 | jq '.')
 # Extract the 'Value' and 'MasterPublicKey' fields
 value=$(echo "$output" | jq -r '.Shares[0].Value')
 master_public_key=$(echo "$output" | jq -r '.MasterPublicKey')
-master_public_key=aac3880d4978a79f8c01630927e4b06020e45c6b7ded016a7df99d35a000fec24590d610a1c119d9a18d6b4270aad4f1
+#master_public_key=aac3880d4978a79f8c01630927e4b06020e45c6b7ded016a7df99d35a000fec24590d610a1c119d9a18d6b4270aad4f1
 echo "pk: $master_public_key"
-output=$(./ShareGenerator derive "$value" 0 1456 | jq '.')
+output=$(./ShareGenerator derive "$value" 0 14-56 | jq '.')
 
 key_share=$(echo "$output" | jq -r '.KeyShare')
-key_share=aac729475df68c8f499d6d92bff23f8f7b91d817a73b5b1bbc84d1d07b07bcc2df3dd7a2363290a92858e0a1d5e5db671371acfe2c1862855f646014fb5a258da3a9161906bb9dad3848e08e9bdac6528d5166327f81dc762c1e739f04ffe4cd
+#key_share=aac729475df68c8f499d6d92bff23f8f7b91d817a73b5b1bbc84d1d07b07bcc2df3dd7a2363290a92858e0a1d5e5db671371acfe2c1862855f646014fb5a258da3a9161906bb9dad3848e08e9bdac6528d5166327f81dc762c1e739f04ffe4cd
 echo "key share : $key_share"
 cd ../encrypter
 
-cipher=$(./encrypter 1456 "$master_public_key" "111")
+cipher=$(./encrypter 14-56 "$master_public_key" "111")
 echo "cipher: $cipher"
-cipher2=$(./encrypter 1456 "$master_public_key" "2345")
+cipher2=$(./encrypter 14-56 "$master_public_key" "2345")
 echo "cipher: $cipher2"
 
 #######

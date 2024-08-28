@@ -11,17 +11,16 @@ description = "Stylus hello world example"
 [dependencies]
 alloy-primitives = "0.3.1"
 alloy-sol-types = "0.3.1"
-stylus-sdk = "0.4.3"
+stylus-sdk = { path = "../../real/stylus/arbitrator/langs/rust/stylus-sdk" }
 
 wee_alloc = "0.4.5"
-stylus-proc="0.4.3"
-
+stylus-proc = { path = "../../real/stylus/arbitrator/langs/rust/stylus-proc" }
 
 [features]
 export-abi = ["stylus-sdk/export-abi"]
 
 [[bin]]
 name = "r"
-path = "src/main.rs"
+path = "src/lib.rs"
 
 

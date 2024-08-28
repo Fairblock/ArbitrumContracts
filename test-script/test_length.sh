@@ -88,15 +88,15 @@ output=$(./ShareGenerator generate 1 1 | jq '.')
 value=$(echo "$output" | jq -r '.Shares[0].Value')
 master_public_key=$(echo "$output" | jq -r '.MasterPublicKey')
 echo "pk: $master_public_key"
-output=$(./ShareGenerator derive "$value" 0 1456 | jq '.')
+output=$(./ShareGenerator derive "$value" 0 14-56 | jq '.')
 
 key_share=$(echo "$output" | jq -r '.KeyShare')
 echo "key share : $key_share"
 cd ../encrypter
 
-cipher=$(./encrypter 1456 "$master_public_key" "171")
+cipher=$(./encrypter 14-56 "$master_public_key" "171")
 echo "cipher: $cipher"
-cipher2=$(./encrypter 1456 "$master_public_key" "67")
+cipher2=$(./encrypter 14-56 "$master_public_key" "67")
 echo "cipher: $cipher2"
 
 #######

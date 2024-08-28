@@ -113,7 +113,7 @@ In order to test the functionality, a basic implementation of an auction contrac
 
 3. **Execution**:
    - The script initializes the `custom-contract`and submits two encrypted bids. These steps are included in the example code of the `test-script/custom-test`. The script then runs the chain and the client which connects to the custom-tcontract and sends key request to the chain when the condition is met. The keys need to be manually submitted to the chain but after the aggregation, the client fetches the key from the chain and submits it to the contract. After the key submission, the `dec` function can be called for decrypting the bids. Due to the high gas usage, this function can be called through `call()` instead of `send()`. 
-   - Note: In the current test setup, two bids are submitted. The bid values can be modified through changing the values on lines `97` and `99` of the `setup.sh` script. Moreover, the condition for the encryption and decryption is hardcoded as `1456` assuming the `id = 1` and `deadline = 456`. In order to modify this, the value should be changed on lines `91, 97, and 99` of the script. Also, on lines `107-108, 114, and 120` of the example. (`test-script/custom-test/examples/counter.rs`) 
+   - Note: In the current test setup, two bids are submitted. The bid values can be modified through changing the values on lines `97` and `99` of the `setup.sh` script. Moreover, the condition for the encryption and decryption is hardcoded as `14-56` assuming the `id = 1` and `deadline = 456`. In order to modify this, the value should be changed on lines `91, 97, and 99` of the script. Also, on lines `107-108, 114, and 120` of the example. (`test-script/custom-test/examples/counter.rs`) 
 
 ### Benchmarking Analysis
 
