@@ -2,8 +2,7 @@
 extern crate alloc;
 
 /// Initializes a custom, global allocator for Rust programs compiled to WASM.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 use base64::{engine::general_purpose, Engine};
 use bls12_381_plus::{G1Affine, G2Affine};
 use ethabi::Token;
@@ -32,7 +31,17 @@ sol_storage! {
 
     }
 }
-
+sol_interface! {
+    interface IIBE {
+        function decrypt(uint8[] memory private, uint8[] memory cv, uint8[] memory cw, uint8[] memory cu) external view returns (uint8[] memory);
+    }
+    interface IDecrypterChacha20 {
+        function decrypter(uint8[] memory file_key, uint8[] memory nonce, uint8[] memory s) external pure returns (uint8[] memory);
+    }
+    interface IMacChacha20 {
+        function headermac(uint8[] memory file_key, uint8[] memory body) external pure returns (uint8[] memory);
+    }
+}
 #[external]
 impl Decrypter {
     pub fn decrypt(
@@ -44,11 +53,11 @@ impl Decrypter {
 
         let mut cursor = Cursor::new(c);
         let ibe_contract: Address =
-            Address::from_str("0x6fe53df98f956841199f3aa4b89bdd4f23bc4783").unwrap();
+            Address::from_str("0x6d7190dbd5053b68687fc9406ff4b4075138f7f9").unwrap();
         let decrypter_contract: Address =
-            Address::from_str("0x91d976ef94a1b2bb6c24097f335037342f0b031e").unwrap();
+            Address::from_str("0x2494e4d946dd4423519fce5b68fdbdaf9afadd9d").unwrap();
         let mac_contract: Address =
-            Address::from_str("0x4e41d71024260f923a7e53f7f20d5c375da5f7f0").unwrap();
+            Address::from_str("0xf474512f901ece89fd15d0b23401077ee13666b2").unwrap();
         let decrypted = Decrypt(
             &sk,
             &mut cursor,
@@ -175,29 +184,20 @@ struct Stanza {
 pub fn Decrypt<'a>(
     sk: &G2Affine,
     src: &'a mut dyn Read,
-    ibe_contract: Address,
-    decrypter_contract: Address,
-    mac_contract: Address,
+    ibe_contract_addr: Address,
+    decrypter_contract_addr: Address,
+    mac_contract_addr: Address,
 ) -> Vec<u8> {
     // Parsing header and payload
     let (hdr, mut payload) = parse(src).unwrap();
 
-    let file_key = unwrap(sk, &[*hdr.recipients[0].clone()], ibe_contract);
-    return file_key;
-    let calldata = encode_function_header_mac(
-        file_key.clone(),
-        hdr.recipients[0].clone().type_,
-        hdr.recipients[0].clone().args,
-        hdr.recipients[0].clone().body,
-    );
-    let mac = match call(Call::new(), mac_contract, &calldata) {
-        Ok(value) => value,
-        Err(e) => {
-            return vec![];
-        }
-    };
-    let mac_data= mac[64..64+mac[63] as usize].to_vec();
-    if mac_data != hdr.mac {
+    let file_key = unwrap(sk, &[*hdr.recipients[0].clone()], ibe_contract_addr);
+    
+   
+    let mac_contract = IMacChacha20{address:mac_contract_addr};
+    let mac = mac_contract.headermac(Call::new(),file_key.clone(),hdr.recipients[0].clone().body).unwrap();
+   
+    if mac.to_vec() != hdr.mac {
         return vec![];
     }
     let mut nonce = vec![0u8; 16];
@@ -208,22 +208,17 @@ pub fn Decrypt<'a>(
     let _ = payload.read_to_end(&mut s);
     // call new_reader or decrypter
    
-    
-    let calldata = encode_function_decrypter(file_key, nonce, s);
-    let msg = match call(Call::new(), decrypter_contract, &calldata) {
-        Ok(value) => value,
-        Err(e) => {
-            return vec![];
-        }
-    };
-    let msg_data= msg[64..64+msg[63] as usize].to_vec();
-    msg_data
+    let decrypter_contract = IDecrypterChacha20{address:decrypter_contract_addr};
+    let msg = decrypter_contract.decrypter(Call::new(),file_key.clone(),nonce,s).unwrap();
+  
+   
+    msg
 }
 
-fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> Vec<u8> {
+fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> Vec<u8>{
     // Check stanza length and type
     if stanzas.len() != 1 {
-        return (vec![0]);
+        return (vec![]);
     }
 
     // Convert bytes to ciphertext and perform the unlock operation
@@ -263,103 +258,20 @@ fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
     ct
 }
 
-fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract: Address) -> Vec<u8> {
-    let pairing_contract_addr: String = "0x13544f0d527f74706b862ae87f2b13b89ee1d190".to_string();
-    let hasher_contract_addr: String = "0x2c397820261d13080e404b4ff25aa0e16e2062b2".to_string();
-    let calldata = encode_function_decrypt(
-        signature.to_compressed().to_vec(),
-        ciphertext.v.clone(),
-        ciphertext.w.clone(),
-        ciphertext.u.to_compressed().to_vec(),
-        pairing_contract_addr,
-        hasher_contract_addr,
-    );
-    let mut v = signature.to_compressed().to_vec();
+fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Address) -> Vec<u8>{
+
     
-    return v;
-    let data = match call(Call::new(), ibe_contract, &calldata) {
-        Ok(value) => value,
-        Err(e) => {
-            return vec![];
-        }
-    };
-    let data_data= data[64..64+data[63] as usize].to_vec();
-    data_data
+    let ibe_contract = IIBE{address:ibe_contract_addr};
+    let data = ibe_contract.decrypt(Call::new(),  signature.to_compressed().to_vec(),
+    ciphertext.v.clone(),
+    ciphertext.w.clone(),
+    ciphertext.u.to_compressed().to_vec()).unwrap();
+  
+    data
 }
 
-fn encode_function_header_mac(
-    file_key: Vec<u8>,
-    type_: String,
-    args: Vec<String>,
-    body: Vec<u8>,
-) -> Vec<u8> {
-    let function_signature: [u8; 4] = [0xa9, 0x1e, 0x5a, 0xd3];
-    // Prepare the inputs as Tokens
-    let mut args_token: Vec<Token> = Vec::new();
-    let mut i = 0;
-    for item in args {
-        args_token.insert(i, Token::String(item));
-        i = i + 1;
-    }
-    let inputs: Vec<Token> = vec![
-        Token::Bytes(file_key),
-        Token::String(type_),
-        Token::Array(args_token),
-        Token::Bytes(body),
-    ];
 
-    // Encode the inputs with the function signature
-    let mut encoded = function_signature.to_vec();
-    let encoded_params = ethabi::encode(&inputs);
 
-    // Combine the function signature with the encoded parameters
-    encoded.extend_from_slice(&encoded_params);
-
-    encoded
-}
-fn encode_function_decrypter(file_key: Vec<u8>, nonce: Vec<u8>, s: Vec<u8>) -> Vec<u8> {
-    let function_signature: [u8; 4] = [0x50, 0xdc, 0x7e, 0xb1];
-    // Prepare the inputs as Tokens
-    let inputs: Vec<Token> = vec![Token::Bytes(file_key), Token::Bytes(nonce), Token::Bytes(s)];
-
-    // Encode the inputs with the function signature
-    let mut encoded = function_signature.to_vec();
-    let encoded_params = ethabi::encode(&inputs);
-
-    // Combine the function signature with the encoded parameters
-    encoded.extend_from_slice(&encoded_params);
-
-    encoded
-}
-
-fn encode_function_decrypt(
-    private: Vec<u8>,
-    cv: Vec<u8>,
-    cw: Vec<u8>,
-    cu: Vec<u8>,
-    pairing_contract: String,
-    hasher_contract: String,
-) -> Vec<u8> {
-    let function_signature: [u8; 4] = [0x39, 0x83, 0xd4, 0x30];
-    // Prepare the inputs as Tokens
-    let inputs: Vec<Token> = vec![
-        Token::Bytes(private),
-        Token::Bytes(cv),
-        Token::Bytes(cw),
-        Token::Bytes(cu),
-        Token::String(pairing_contract),
-        Token::String(hasher_contract),
-    ];
-
-    // Encode the inputs with the function signature
-    let mut encoded = function_signature.to_vec();
-    let encoded_params = ethabi::encode(&inputs);
-
-    // Combine the function signature with the encoded parameters
-    encoded.extend_from_slice(&encoded_params);
-
-    encoded
-}
 
 #[cfg(test)]
 mod tests {

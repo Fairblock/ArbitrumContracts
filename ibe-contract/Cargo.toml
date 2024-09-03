@@ -10,17 +10,17 @@ description = "Stylus hello world example"
 
 [dependencies]
 
-stylus-sdk = { version = "0.5.0", features = ["docs"] }
+stylus-sdk = { version = "0.6.0", features = ["docs"] }
 
-mini-alloc = "0.4.2"
+num-bigint = {version = "0.4", default-features = false}
 serde = { version = "1.0",  default-features = false, features = ["derive"] }
-
+ic_bls12_381 = {version = "0.10.0", default-features = false, features = ["groups", "pairings", "alloc", "experimental"]}
 # num-bigint = {version = "0.4", default-features = false}
 # ic_bls12_381 = {version = "0.8.0", default-features = false, features = ["groups", "experimental"]}
 serde_json ={version = "1.0.108", default-features = false, features = ["alloc"]}
 bls12_381_plus = {version = "0.7.0",  features = ["groups"]}
-
-
+# getrandom={version="0.2.15",features=["js"]}
+# ethers = { version = "2.0.14", features = ["openssl"] }
 sha2 = {version = "0.10.8", default-features = false}
 ethabi={version = "18.0.0", default-features = false}
 hex = "0.4.3" 
@@ -40,7 +40,7 @@ path = "src/lib.rs"
 
 [features]
 export-abi = ["stylus-sdk/export-abi"]
-
+debug = ["stylus-sdk/debug"]
 
 
 [profile.release]

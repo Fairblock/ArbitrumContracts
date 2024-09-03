@@ -2,9 +2,6 @@
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-/// Initializes a custom, global allocator for Rust programs compiled to WASM.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 
 
@@ -47,6 +44,7 @@ impl DecrypterChacha20 {
     
 
 }
+
 fn stream_key(file_key: &[u8], nonce: &[u8]) -> Vec<u8> {
     let h = Hkdf::<Sha256>::new(Some(nonce), file_key);
     let mut stream_key = vec![0u8; 32];
@@ -56,3 +54,4 @@ fn stream_key(file_key: &[u8], nonce: &[u8]) -> Vec<u8> {
 
     stream_key
 }
+

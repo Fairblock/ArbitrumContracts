@@ -7,6 +7,7 @@ use ethers::{
 };
 use eyre::eyre;
 use ic_bls12_381::{pairing, G1Affine, G2Affine};
+use sha2::Digest;
 use std::env;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -36,7 +37,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-     function pairing(uint8[] memory private, uint8[] memory cu) external view returns (uint8[579] memory)
+        function pairing(uint8[96] memory private, uint8[48] memory cu) external view returns (uint8[32] memory)
     
       
         ]"#
@@ -58,16 +59,22 @@ async fn main() -> eyre::Result<()> {
     let key = G2Affine::generator();
 
     let pair = pairing(&cu, &key);
-    // println!("{:?}", pair.to_bytes().to_vec());
-    println!("{:?}", pair.to_bytes().to_vec());
+    let mut hash = sha2::Sha256::new();
+    // let array_data: [u8; 576] = r_gid.to_bytes().to_vec().try_into().unwrap();
+    hash.update(b"IBE-H2");
+    hash.update(pair.to_bytes().to_vec());
+    let h_r_git: &[u8] = &hash.finalize().to_vec()[0..32];
+    let out_calculated: [u8; 32] = h_r_git.try_into().unwrap();
+    let p: [u8; 96] = key.to_compressed().to_vec().try_into().unwrap();
+    let c: [u8; 48] = cu.to_compressed().to_vec().try_into().unwrap();
     let pairing_contract = IBEPairing::new(address, client);
     let binding = pairing_contract
-        .pairing(key.to_compressed().to_vec(), cu.to_compressed().to_vec())
+        .pairing(p, c)
         .gas_price(100000000)
         .gas(29000000);
 
     let out = binding.call().await?;
     // let p= out[64..64+out[63] as usize].to_vec();
-
+    assert_eq!(out, out_calculated);
     Ok(())
 }

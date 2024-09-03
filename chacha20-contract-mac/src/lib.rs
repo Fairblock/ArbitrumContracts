@@ -2,9 +2,7 @@
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-/// Initializes a custom, global allocator for Rust programs compiled to WASM.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 
 use serde::Deserialize;
 use std::io::{self, Read};
@@ -42,16 +40,16 @@ impl MacChacha20 {
    
 
     
-    fn header_mac(file_key: Vec<u8>, type_ :String, args: Vec<String>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
+    fn headermac(file_key: Vec<u8>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
        // let result: Stanza = serde_json::from_slice(r.as_slice()).expect("Deserialization failed");
-       let result = Stanza{type_:type_,args:args,body:body};
+       let result = Stanza{type_:"distIBE".to_string(),args:vec![],body:body};
         let hdr = Header{recipients:vec![Box::new(result)]};
         let h = Hkdf::<Sha256>::new(None, file_key.as_slice());
         let mut hmac_key = [0u8; 32];
-        h.expand(b"header", &mut hmac_key);
+        let _ = h.expand(b"header", &mut hmac_key);
         let mut hh = Hmac::<Sha256>::new_from_slice(&hmac_key).expect("HMAC can take key of any size");
         let mut hmac_writer = HmacWriter::new(hh.clone());
-        hdr.marshal_without_mac(&mut hmac_writer);
+        let _ = hdr.marshal_without_mac(&mut hmac_writer);
         hh = hmac_writer.0;
         Ok(hh.finalize().into_bytes().to_vec())
     }

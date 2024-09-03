@@ -36,7 +36,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-     function decrypter(uint8[] memory file_key, uint8[] memory nonce, uint8[] memory s) external view returns (uint8[] memory)
+     function decrypter(uint8[32] memory file_key, uint8[16] memory nonce, uint8[] memory s) external view returns (uint8[] memory)
     
       
         ]"#
@@ -53,12 +53,12 @@ async fn main() -> eyre::Result<()> {
         provider,
         wallet.clone().with_chain_id(chain_id),
     ));
-    let file_key: Vec<u8> = vec![135, 23, 37, 192, 118, 19, 149, 225, 252, 248, 146, 59, 33, 59, 145, 74, 119, 232, 232, 73, 40, 248, 139, 52, 22, 38, 17, 215, 44, 251, 134, 124];
-    let nonce = vec![];
-    let s = vec![0];
+    let file_key: Vec<u8> = vec![212, 19, 27, 222, 185, 232, 136, 98, 249, 3, 118, 190, 124, 91, 65, 210, 99, 96, 200, 195, 91, 90, 61, 245, 82, 158, 35, 19, 139, 96, 47, 137];
+    let nonce = vec![37, 61, 47, 1, 244, 206, 42, 96, 20, 9, 7, 125, 207, 71, 69, 210];
+    let s = vec![0, 104, 143, 189, 62, 0, 194, 29, 184, 189, 149, 107, 25, 206, 151, 8, 95, 30, 144, 61, 203, 218, 96, 122, 237, 116, 192, 86];
     let decrypter_chacha_20 = DecrypterChacha20::new(address, client);
     let binding = decrypter_chacha_20
-        .decrypter(file_key,nonce,s)
+        .decrypter(file_key.try_into().unwrap(),nonce.try_into().unwrap(),s)
         .gas_price(100000000)
         .gas(29000000);
 

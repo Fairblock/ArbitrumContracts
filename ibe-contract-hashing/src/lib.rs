@@ -3,9 +3,7 @@
 
 extern crate alloc;
 
-/// Initializes a custom, global allocator for Rust programs compiled to WASM.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 
 use sha2::Digest;
 
@@ -29,24 +27,24 @@ sol_storage! {
 #[external]
 
 impl Hasher {
-   pub fn verify (sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
+   pub fn verify (sigma: Vec<u8>, msg: Vec<u8>, cu:Vec<u8>) -> Result<bool, stylus_sdk::call::Error> {
            let r_g = {
            
             
-            let r = h3(sigma,msg)?;
-            let rs = Scalar::from_bytes(&r).unwrap();
+            let r = h3(sigma.to_vec(),msg.to_vec())?;
+            let rs = Scalar::from_bytes(&r.try_into().unwrap()).unwrap();
             let g1_base_projective = G1Projective::from(G1Affine::generator());
             (g1_base_projective * rs)
         };
        let result_affine = G1Affine::from(r_g);
        
-      Ok(result_affine.to_compressed().to_vec())
+      Ok(result_affine.to_compressed().to_vec() == cu)
    }
  
 
 }
 
-pub  fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<[u8;32], stylus_sdk::call::Error> {
+pub  fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
         
     let mut hasher = sha2::Sha256::new();
 
@@ -89,7 +87,7 @@ pub  fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<[u8;32], stylus_sdk::call::Er
         
         if sc.is_some().into(){
          
-            return Ok(*array);
+            return Ok(array.to_vec());
         }
           
     }
