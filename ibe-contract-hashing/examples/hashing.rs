@@ -36,7 +36,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-     function verify(uint8[] memory sigma, uint8[] memory msg) external view returns (uint8[] memory)
+     function verify(uint8[] memory sigma, uint8[] memory msg, uint8[] memory cu) external view returns (bool)
     
       
         ]"#
@@ -55,16 +55,20 @@ async fn main() -> eyre::Result<()> {
     ));
 
 
-
+    let sigma = vec![19, 65, 37, 162, 246, 189, 27, 29, 191, 32, 125, 222, 21, 26, 134, 64, 201, 126, 119, 89, 233, 172, 171, 145, 25, 190, 114, 209, 165, 61, 138, 5];
+    let msg = vec![212, 19, 27, 222, 185, 232, 136, 98, 249, 3, 118, 190, 124, 91, 65, 210, 99, 96, 200, 195, 91, 90, 61, 245, 82, 158, 35, 19, 139, 96, 47, 137];
+    let cu = vec![173, 168, 6, 103, 237, 18, 208, 174, 179, 199, 176, 242, 232, 91, 53, 254, 133, 102, 64, 175, 87, 116, 220, 227, 41, 65, 125, 198, 218, 216, 214, 188, 240, 180, 163, 226, 18, 106, 157, 58, 215, 108, 129, 3, 169, 121, 170, 13];
+    
  
     let hasher = Hasher::new(address, client);
     let binding = hasher
-        .verify(vec![1,2,3], vec![1,2,3])
+        .verify(sigma,msg,cu)
         .gas_price(100000000)
         .gas(29000000);
 
     let out = binding.call().await?;
     
     println!("{:?}",out);
+    assert!(out);
     Ok(())
 }

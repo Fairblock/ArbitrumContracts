@@ -37,7 +37,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-        function pairing(uint8[96] memory private, uint8[48] memory cu) external view returns (uint8[32] memory)
+        function pairing(uint8[] memory private, uint8[] memory cu) external view returns (uint8[] memory)
     
       
         ]"#
@@ -65,16 +65,16 @@ async fn main() -> eyre::Result<()> {
     hash.update(pair.to_bytes().to_vec());
     let h_r_git: &[u8] = &hash.finalize().to_vec()[0..32];
     let out_calculated: [u8; 32] = h_r_git.try_into().unwrap();
-    let p: [u8; 96] = key.to_compressed().to_vec().try_into().unwrap();
-    let c: [u8; 48] = cu.to_compressed().to_vec().try_into().unwrap();
+   
     let pairing_contract = IBEPairing::new(address, client);
     let binding = pairing_contract
-        .pairing(p, c)
+        .pairing(key.to_compressed().to_vec(), cu.to_compressed().to_vec())
         .gas_price(100000000)
         .gas(29000000);
 
     let out = binding.call().await?;
     // let p= out[64..64+out[63] as usize].to_vec();
     assert_eq!(out, out_calculated);
+    println!("Successful! call output: {:?} - expected output: {:?}", out, out_calculated);
     Ok(())
 }

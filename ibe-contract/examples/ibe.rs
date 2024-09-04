@@ -3,12 +3,13 @@ use ethers::{
     prelude::abigen,
     providers::{Http, Middleware, Provider},
     signers::{LocalWallet, Signer},
-    types::Address, utils::hex::ToHexExt,
+    types::Address,
+    utils::hex::ToHexExt,
 };
 
-use num_bigint::{BigInt, Sign};
 use eyre::{eyre, Ok};
 use ic_bls12_381::{pairing, G1Affine, G1Projective, G2Affine, Scalar};
+use num_bigint::{BigInt, Sign};
 use std::env;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -16,8 +17,8 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 const BLOCK_SIZE: usize = 32;
-use stylus_sdk::{call::*, function_selector};
 use sha2::Digest;
+use stylus_sdk::{call::*, function_selector};
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -39,7 +40,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-     function decrypt(uint8[96] memory private,uint8[] memory cv,uint8[] memory cw,uint8[48] memory cu, string memory pairing_contract, string memory hasher_contract) external view returns (uint8[] memory)
+     function decrypt(uint8[] memory private,uint8[] memory cv,uint8[] memory cw,uint8[] memory cu) external view returns (uint8[] memory)
  
         ]"#
     );
@@ -55,35 +56,39 @@ async fn main() -> eyre::Result<()> {
         provider,
         wallet.clone().with_chain_id(chain_id),
     ));
-    let sig: Vec<u8> = vec![147, 224, 43, 96, 82, 113, 159, 96, 125, 172, 211, 160, 136, 39, 
-    79, 101, 89, 107, 208, 208, 153, 32, 182, 26, 181, 218, 97, 187, 220, 127, 80, 73, 51, 76, 241, 18, 19, 148, 93, 87, 229, 172, 125, 5, 93, 4, 43, 126, 2, 74, 162, 178, 240, 143, 10, 145, 38, 8, 5, 39, 45, 197, 16, 81, 198, 228, 122, 212, 250, 64, 59, 2, 180, 81, 11, 100, 122, 227, 209, 119, 11, 172, 3, 38, 168, 5, 187, 239, 212, 128, 86, 200, 193, 33, 189, 184];
+    let sig: Vec<u8> = vec![
+        180, 94, 231, 64, 60, 139, 63, 77, 251, 219, 173, 163, 74, 124, 6, 10, 129, 139, 151, 186,
+        102, 134, 86, 99, 150, 127, 59, 169, 18, 212, 67, 132, 48, 180, 58, 172, 181, 219, 30, 166,
+        33, 104, 186, 198, 23, 29, 20, 141, 15, 107, 179, 56, 147, 33, 220, 105, 191, 20, 32, 206,
+        3, 203, 206, 179, 228, 207, 247, 100, 37, 47, 155, 29, 212, 118, 240, 159, 79, 249, 88,
+        182, 208, 106, 20, 154, 236, 61, 92, 86, 122, 253, 31, 5, 161, 65, 125, 200,
+    ];
     let cv: Vec<u8> = vec![
-        226, 49, 84, 245, 88, 22, 0, 237, 151, 70, 45, 15, 125, 45, 178, 252, 105, 59, 225, 239,
-        33, 237, 34, 58, 179, 254, 140, 86, 202, 244, 173, 104,
+        234, 127, 4, 159, 177, 247, 59, 204, 90, 152, 203, 160, 131, 136, 223, 36, 211, 185, 122,
+        213, 31, 223, 2, 151, 90, 8, 122, 40, 179, 138, 248, 166,
     ];
     let cw: Vec<u8> = vec![
-        224, 185, 163, 29, 112, 243, 253, 202, 126, 136, 190, 217, 131, 2, 127, 172, 111, 117, 57,
-        123, 203, 247, 32, 190, 47, 36, 47, 81, 214, 94, 160, 216,
+        30, 19, 1, 80, 73, 15, 191, 118, 254, 56, 244, 233, 225, 163, 134, 242, 170, 53, 157, 182,
+        234, 233, 250, 207, 221, 64, 151, 102, 93, 207, 188, 132,
     ];
-    let cu: Vec<u8> = vec![151, 241, 211, 167, 49, 151, 215, 148, 38, 149, 99, 140, 79, 169, 172, 15, 195, 104, 140, 79, 151, 116, 185, 5, 161, 78, 58, 63, 23, 27, 172, 88, 108, 85, 232
-    , 63, 249, 122, 26, 239, 251, 58, 240, 10, 219, 34, 198, 187];
+    let cu: Vec<u8> = vec![
+        173, 168, 6, 103, 237, 18, 208, 174, 179, 199, 176, 242, 232, 91, 53, 254, 133, 102, 64,
+        175, 87, 116, 220, 227, 41, 65, 125, 198, 218, 216, 214, 188, 240, 180, 163, 226, 18, 106,
+        157, 58, 215, 108, 129, 3, 169, 121, 170, 13,
+    ];
     let _cu = G1Affine::from_compressed(&cu.clone().clone().try_into().unwrap()).unwrap();
     let pr = G2Affine::from_compressed(&sig.clone().try_into().unwrap()).unwrap();
     let pair = pairing(&_cu, &pr);
-   
+
     let sigma = {
         let mut hash = sha2::Sha256::new();
-
-       let r_gid=pair.to_bytes().to_vec();
-        
+        let r_gid = pair.to_bytes().to_vec();
         hash.update(b"IBE-H2");
         hash.update(r_gid.clone());
-        println!("{:?}",r_gid);
         let h_r_git: &[u8] = &hash.finalize().to_vec()[0..BLOCK_SIZE];
-        println!("{:?} {}", h_r_git, h_r_git.len());
         xor(h_r_git, &cv)
     };
-   
+
     // 2. Compute Msg = W XOR H4(sigma)
     let msg = {
         let mut hash = sha2::Sha256::new();
@@ -92,42 +97,23 @@ async fn main() -> eyre::Result<()> {
         let h_sigma = &hash.finalize().to_vec()[0..BLOCK_SIZE];
         xor(h_sigma, &cw)
     };
-    let r_g = {
-           
-            
-        let r = h3(sigma.to_vec(),msg.to_vec());
-        let rs = Scalar::from_bytes(&r).unwrap();
-        let g1_base_projective = G1Projective::from(G1Affine::generator());
-        (g1_base_projective * rs)
-    };
-   let result_affine = G1Affine::from(r_g);
-   
 
-   println!("msg : {:?} sigma: {:?} a: {:?}", msg, sigma, result_affine.to_compressed());
-    let pairing_contract_addr: String = "0x6c81613befc3271dfd835a35eb79aac372409b88".to_string();
-    let hasher_contract_addr: String = "0x6c81613befc3271dfd835a35eb79aac372409b88".to_string();
     let ibe = IBE::new(address, client);
-    // let binding = ibe
-    //     .decrypt(sig, cv, cw, cu, pairing_contract_addr, hasher_contract_addr)
-    //     .gas_price(100000000)
-    //     .gas(29000000);
-    // let _cu = G1Affine::from_compressed(&cu.clone().clone().try_into().unwrap()).unwrap();
-    // let pr = G2Affine::from_compressed(&sig.clone().try_into().unwrap()).unwrap();
-    // let pair = pairing(&_cu, &pr);
-    // println!("{:?}", pair.to_bytes().to_vec());
-  
-   let binding = ibe.decrypt(sig.try_into().unwrap(),cv,cw,cu.try_into().unwrap(),pairing_contract_addr,hasher_contract_addr).gas_price(100000000).gas(29000000);
+    let binding = ibe
+        .decrypt(sig, cv, cw, cu)
+        .gas_price(100000000)
+        .gas(29000000);
     let out = binding.call().await?;
- 
-    println!("{:?}", out);
+    assert_eq!(out, msg);
+    println!("output: {:?} - msg : {:?}", out, msg);
     Ok(())
 }
+
 fn xor(a: &[u8], b: &[u8]) -> Vec<u8> {
     a.iter().zip(b.iter()).map(|(a, b)| a ^ b).collect()
 }
 
-pub  fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8;32] {
-        
+pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8; 32] {
     let mut hasher = sha2::Sha256::new();
 
     // Hashing H3Tag, sigma and msg
@@ -152,28 +138,26 @@ pub  fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8;32] {
         if hashable.to_bytes_be().1[0] & 0x80 != 0 {
             hashed[0] >>= to_mask;
         } else {
-            let l =hashed.len();
+            let l = hashed.len();
             hashed[l - 1] >>= to_mask;
         }
-        
-        hashed[0] = hashed[0]/2;
-        
+
+        hashed[0] = hashed[0] / 2;
+
         hashed.reverse();
         // Unmarshal and check if within the modulo
-       let v = BigInt::from_bytes_le(Sign::Plus, &hashed); 
-       let vec = v.to_bytes_le().1;
-       let array: &[u8; 32] = vec.get(..32)
-    .and_then(|slice| slice.try_into().ok())
-    .expect("Vec is shorter than 32 bytes");
+        let v = BigInt::from_bytes_le(Sign::Plus, &hashed);
+        let vec = v.to_bytes_le().1;
+        let array: &[u8; 32] = vec
+            .get(..32)
+            .and_then(|slice| slice.try_into().ok())
+            .expect("Vec is shorter than 32 bytes");
         let sc = Scalar::from_bytes(&array.clone());
-        
-        if sc.is_some().into(){
-         
+
+        if sc.is_some().into() {
             return *array;
         }
-          
     }
-let my_error = stylus_sdk::call::Error::Revert(vec![0]);
-[0u8;32]
-   
+    let my_error = stylus_sdk::call::Error::Revert(vec![0]);
+    [0u8; 32]
 }
