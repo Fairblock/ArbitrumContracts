@@ -101,7 +101,7 @@ async fn main() -> eyre::Result<()> {
     log::info!("submited through tx = {:?}", num2);
 
 
-    // test the decryption with the precompiled pairing
+  
     thread::sleep(Duration::from_secs(20));
     let binding4 = custom.submit_key(arg4.to_string(), "14-56".to_string()).gas(50000000);
     let num3 = binding4.send().await?;
