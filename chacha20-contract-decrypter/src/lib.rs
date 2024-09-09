@@ -1,48 +1,43 @@
-
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-
-
-
-/// Import the Stylus SDK along with alloy primitive types for use in our program.
-use stylus_sdk::prelude::*;
 use aead::Aead;
 use chacha20poly1305::{
-    aead::{ self, NewAead},
+    aead::{self, NewAead},
     ChaCha20Poly1305, Key, Nonce,
 };
 use hkdf::Hkdf;
 use sha2::Sha256;
-// Define the entrypoint as a Solidity storage object, in this case a struct
-// called `Counter` with a single uint256 value called `number`. The sol_storage! macro
-// will generate Rust-equivalent structs with all fields mapped to Solidity-equivalent
-// storage slots and types.
+use stylus_sdk::prelude::*;
+
 sol_storage! {
     #[entrypoint]
     pub struct DecrypterChacha20 {
-       
+
     }
 }
 
-/// Define an implementation of the generated Counter struct, defining a set_number
-/// and increment method using the features of the Stylus SDK.
 #[external]
 
 impl DecrypterChacha20 {
-   
-    fn decrypter(file_key: Vec<u8>, nonce: Vec<u8>, s: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
-       let key =  stream_key(file_key.as_slice(), nonce.as_slice());
+    fn decrypter(
+        file_key: Vec<u8>,
+        nonce: Vec<u8>,
+        s: Vec<u8>,
+    ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
+        if file_key.len() != 32 || nonce.len() != 16 || s.len() < 2 {
+            return Err(stylus_sdk::call::Error::Revert(vec![1]));
+        }
+        let key = stream_key(file_key.as_slice(), nonce.as_slice());
         let aead_key = Key::from_slice(key.as_slice());
         let a = ChaCha20Poly1305::new(aead_key);
         let nonce = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-        let plain = a.decrypt(&Nonce::from_slice(&nonce), &s[1..]).unwrap();
-    
+        let plain = a
+            .decrypt(&Nonce::from_slice(&nonce), &s[1..])
+            .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
+
         Ok(plain)
     }
-    
-    
-
 }
 
 fn stream_key(file_key: &[u8], nonce: &[u8]) -> Vec<u8> {
@@ -54,4 +49,3 @@ fn stream_key(file_key: &[u8], nonce: &[u8]) -> Vec<u8> {
 
     stream_key
 }
-

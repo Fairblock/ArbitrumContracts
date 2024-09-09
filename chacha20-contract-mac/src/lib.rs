@@ -1,64 +1,65 @@
-
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-
-
-use serde::Deserialize;
-use std::io::{self, Read};
-use std::io::{ Write};
-use std::str::FromStr;
 use hmac::{Hmac, Mac, NewMac};
+use serde::Deserialize;
+use std::io::Write;
+use std::io::{self, Read};
+use std::str::FromStr;
 
-/// Import the Stylus SDK along with alloy primitive types for use in our program.
-use stylus_sdk::prelude::*;
 use base64::{engine::general_purpose, write::EncoderWriter, Engine};
 use hkdf::Hkdf;
 use sha2::Sha256;
+use stylus_sdk::prelude::*;
 const INTRO: &str = "age-encryption.org/v1";
 
 const RECIPIENT_PREFIX: &[u8] = b"->";
 
 const FOOTER_PREFIX: &[u8] = b"---";
 
-// Define the entrypoint as a Solidity storage object, in this case a struct
-// called `Counter` with a single uint256 value called `number`. The sol_storage! macro
-// will generate Rust-equivalent structs with all fields mapped to Solidity-equivalent
-// storage slots and types.
 sol_storage! {
     #[entrypoint]
     pub struct MacChacha20 {
-       
+
     }
 }
 
-/// Define an implementation of the generated Counter struct, defining a set_number
-/// and increment method using the features of the Stylus SDK.
 #[external]
 
 impl MacChacha20 {
-   
-
-    
     fn headermac(file_key: Vec<u8>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
-       // let result: Stanza = serde_json::from_slice(r.as_slice()).expect("Deserialization failed");
-       let result = Stanza{type_:"distIBE".to_string(),args:vec![],body:body};
-        let hdr = Header{recipients:vec![Box::new(result)]};
-        let h = Hkdf::<Sha256>::new(None, file_key.as_slice());
+        if file_key.len() != 32 || body.is_empty() {
+            return Err(stylus_sdk::call::Error::Revert(vec![1]));
+        }
+
+        let result = Stanza {
+            type_: "distIBE".to_string(),
+            args: vec![],
+            body,
+        };
+        let hdr = Header {
+            recipients: vec![Box::new(result)],
+        };
+
+        let h = Hkdf::<Sha256>::new(None, &file_key);
         let mut hmac_key = [0u8; 32];
-        let _ = h.expand(b"header", &mut hmac_key);
-        let mut hh = Hmac::<Sha256>::new_from_slice(&hmac_key).expect("HMAC can take key of any size");
+        h.expand(b"header", &mut hmac_key)
+            .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
+
+        let mut hh = Hmac::<Sha256>::new_from_slice(&hmac_key)
+            .map_err(|_| stylus_sdk::call::Error::Revert(vec![3]))?;
         let mut hmac_writer = HmacWriter::new(hh.clone());
-        let _ = hdr.marshal_without_mac(&mut hmac_writer);
+
+        hdr.marshal_without_mac(&mut hmac_writer)
+            .map_err(|_| stylus_sdk::call::Error::Revert(vec![4]))?;
+
         hh = hmac_writer.0;
         Ok(hh.finalize().into_bytes().to_vec())
     }
-    
-
 }
-#[derive( Clone, Deserialize)]
+#[derive(Clone, Deserialize)]
 struct Stanza {
-    type_: String, // 'type' is a reserved keyword in Rust, so we use 'type_'
+    type_: String,
     args: Vec<String>,
     body: Vec<u8>,
 }
@@ -67,9 +68,8 @@ fn process_chunks_and_append(data: &[u8]) -> Vec<u8> {
     let mut result = Vec::new();
 
     for chunk in data.chunks(CHUNK_SIZE) {
-        // Append the chunk to the result vector.
         result.extend_from_slice(chunk);
-        // Append [10] after the chunk.
+
         if (chunk.len() == 64) {
             result.push(10);
         }
@@ -92,7 +92,7 @@ impl Stanza {
         let l = encoded.as_bytes().len() - 2;
         let enc = &encoded.as_bytes()[..l];
         let mut enc2 = &encoded.as_bytes()[l..];
-        // panic!("{:?}", encoded.as_bytes());
+
         let new = process_chunks_and_append(enc);
 
         let mut ff: String = String::from_str("").unwrap();
@@ -103,15 +103,14 @@ impl Stanza {
         enc2.read_to_string(&mut f);
         write!(w, "{}", f);
         writeln!(w);
-        // writeln!(w);
+
         w
     }
 }
 
-#[derive( Clone)]
+#[derive(Clone)]
 struct Header {
-    recipients: Vec<Box<Stanza>>, // Vec of boxed (heap-allocated) Stanza objects
-             // Vec<u8> is equivalent to a slice of bytes ([]byte in Go)
+    recipients: Vec<Box<Stanza>>,
 }
 impl Header {
     fn marshal_without_mac<W: Write>(&self, w: &mut W) -> io::Result<()> {

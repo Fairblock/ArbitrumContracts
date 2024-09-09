@@ -5,15 +5,12 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::Address,
 };
-use eyre::eyre;
-use ic_bls12_381::{ G1Affine, G2Affine};
+
 use std::env;
-use std::io::{BufRead, BufReader};
+
 use std::str::FromStr;
 use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-use stylus_sdk::call::*;
+
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {

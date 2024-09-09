@@ -53,11 +53,11 @@ impl Decrypter {
 
         let mut cursor = Cursor::new(c);
         let ibe_contract: Address =
-            Address::from_str("0x6d7190dbd5053b68687fc9406ff4b4075138f7f9").unwrap();
+            Address::from_str("0xfb0ab36a40b1cd208a308d45faaa37da89529cd6").unwrap();
         let decrypter_contract: Address =
-            Address::from_str("0x2494e4d946dd4423519fce5b68fdbdaf9afadd9d").unwrap();
+            Address::from_str("0x792f35cd72b7d816753c58434a3e7da7061339f8").unwrap();
         let mac_contract: Address =
-            Address::from_str("0xf474512f901ece89fd15d0b23401077ee13666b2").unwrap();
+            Address::from_str("0x494811a6392cc9ac50510ded07daf1ba8ca181f9").unwrap();
         let decrypted = Decrypt(
             &sk,
             &mut cursor,
