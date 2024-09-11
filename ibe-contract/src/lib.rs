@@ -2,22 +2,25 @@
 #![no_std]
 extern crate alloc;
 
-
-
-
+use alloc::vec::Vec;
+use alloc::{format, vec};
+use core::str::FromStr;
 use stylus_sdk::function_selector;
 use stylus_sdk::prelude::sol_interface;
-use core::str::FromStr;
-use alloc::{format, vec};
-use alloc::vec::Vec;
-use stylus_sdk::{alloy_primitives::{hex::ToHexExt, Address}, alloy_sol_types, call::{Call, MethodError}};
+use stylus_sdk::{
+    alloy_primitives::{hex::ToHexExt, Address},
+    alloy_sol_types,
+    call::{Call, MethodError},
+};
 
 use sha2::Digest;
 
-
 const BLOCK_SIZE: usize = 32;
 
-use stylus_sdk::{prelude::sol_storage, stylus_proc::{entrypoint, external}};
+use stylus_sdk::{
+    prelude::sol_storage,
+    stylus_proc::{entrypoint, external},
+};
 
 sol_storage! {
     #[entrypoint]
@@ -26,9 +29,7 @@ sol_storage! {
 }
 
 sol_interface! {
-    interface IIBEPairing {
-        function pairing(uint8[] memory private, uint8[] memory cu) external view returns (uint8[] memory);
-    }
+
     interface IHasher {
         function verify(uint8[] memory sigma, uint8[] memory msg, uint8[] memory cu) external view returns (bool);
     }
@@ -36,18 +37,30 @@ sol_interface! {
 
 #[external]
 impl IBE {
-    pub fn decrypt(&self, private: Vec<u8>, cv: Vec<u8>, cw: Vec<u8>, cu: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
-        if private.len() != 96 || cu.len() != 48 || cv.len() > BLOCK_SIZE || cw.len() > BLOCK_SIZE {
+    pub fn decrypt(
+        &self,
+        r_gid: Vec<u8>,
+        cv: Vec<u8>,
+        cw: Vec<u8>,
+        cu: Vec<u8>,
+    ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
+        if cu.len() != 48 || cv.len() > BLOCK_SIZE || cw.len() > BLOCK_SIZE {
             return Err(stylus_sdk::call::Error::Revert(vec![1]));
         }
 
-        let pairing_contract_addr: Address = Address::from_str("0xc79784b402c4a1681c16e5600df92a32ce062a10").map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
-        let hashing_contract_addr: Address = Address::from_str("0x6e50a9114406678ecc3d1731eb666d203e263bf9").map_err(|_| stylus_sdk::call::Error::Revert(vec![3]))?;
+        let hashing_contract_addr: Address =
+            Address::from_str("0x6e50a9114406678ecc3d1731eb666d203e263bf9")
+                .map_err(|_| stylus_sdk::call::Error::Revert(vec![3]))?;
 
         let sigma = {
-            let ibe = IIBEPairing { address: pairing_contract_addr };
-            let h_r_git = ibe.pairing(Call::new(), private, cu.clone()).map_err(|_| stylus_sdk::call::Error::Revert(vec![4]))?;
-            xor(h_r_git.as_slice(), &cv)
+            let mut hash = sha2::Sha256::new();
+
+            hash.update(b"IBE-H2");
+            hash.update(r_gid);
+
+            let h_r_git: &[u8] = &hash.finalize().to_vec()[0..32];
+
+            xor(h_r_git, &cv)
         };
 
         let msg = {
@@ -58,9 +71,13 @@ impl IBE {
             xor(h_sigma, &cw)
         };
 
-        let hasher = IHasher { address: hashing_contract_addr };
-        let verify_res = hasher.verify(Call::new(), sigma.clone(), msg.clone(), cu).map_err(|_| stylus_sdk::call::Error::Revert(vec![5]))?;
-        
+        let hasher = IHasher {
+            address: hashing_contract_addr,
+        };
+        let verify_res = hasher
+            .verify(Call::new(), sigma.clone(), msg.clone(), cu)
+            .map_err(|_| stylus_sdk::call::Error::Revert(vec![5]))?;
+
         if !verify_res {
             return Err(stylus_sdk::call::Error::Revert(vec![6]));
         }

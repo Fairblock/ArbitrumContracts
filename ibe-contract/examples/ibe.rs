@@ -40,7 +40,7 @@ async fn main() -> eyre::Result<()> {
         r#"[
       
     
-     function decrypt(uint8[] memory private,uint8[] memory cv,uint8[] memory cw,uint8[] memory cu) external view returns (uint8[] memory)
+     function decrypt(uint8[] memory r_gid,uint8[] memory cv,uint8[] memory cw,uint8[] memory cu) external view returns (uint8[] memory)
  
         ]"#
     );
@@ -100,7 +100,7 @@ async fn main() -> eyre::Result<()> {
 
     let ibe = IBE::new(address, client);
     let binding = ibe
-        .decrypt(sig, cv, cw, cu)
+        .decrypt(pair.to_bytes().to_vec(), cv, cw, cu)
         .gas_price(100000000)
         .gas(29000000);
     let out = binding.call().await?;

@@ -4,7 +4,7 @@ extern crate alloc;
 /// Initializes a custom, global allocator for Rust programs compiled to WASM.
 
 use base64::{engine::general_purpose, Engine};
-use bls12_381_plus::{G1Affine, G2Affine};
+use ic_bls12_381::{G1Affine, G2Affine,pairing};
 use ethabi::Token;
 use serde::Deserialize;
 use std::{io::Cursor, str::FromStr};
@@ -33,7 +33,7 @@ sol_storage! {
 }
 sol_interface! {
     interface IIBE {
-        function decrypt(uint8[] memory private, uint8[] memory cv, uint8[] memory cw, uint8[] memory cu) external view returns (uint8[] memory);
+        function decrypt(uint8[] memory r_gid, uint8[] memory cv, uint8[] memory cw, uint8[] memory cu) external view returns (uint8[] memory);
     }
     interface IDecrypterChacha20 {
         function decrypter(uint8[] memory file_key, uint8[] memory nonce, uint8[] memory s) external pure returns (uint8[] memory);
@@ -53,7 +53,7 @@ impl Decrypter {
 
         let mut cursor = Cursor::new(c);
         let ibe_contract: Address =
-            Address::from_str("0xfb0ab36a40b1cd208a308d45faaa37da89529cd6").unwrap();
+            Address::from_str("0x61aabc5cad6babbccc3aff0484fa46435869dcc4").unwrap();
         let decrypter_contract: Address =
             Address::from_str("0x792f35cd72b7d816753c58434a3e7da7061339f8").unwrap();
         let mac_contract: Address =
@@ -190,9 +190,9 @@ pub fn Decrypt<'a>(
 ) -> Vec<u8> {
     // Parsing header and payload
     let (hdr, mut payload) = parse(src).unwrap();
-
+   
     let file_key = unwrap(sk, &[*hdr.recipients[0].clone()], ibe_contract_addr);
-    
+  
    
     let mac_contract = IMacChacha20{address:mac_contract_addr};
     let mac = mac_contract.headermac(Call::new(),file_key.clone(),hdr.recipients[0].clone().body).unwrap();
@@ -260,9 +260,10 @@ fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
 
 fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Address) -> Vec<u8>{
 
-    
+    let r_gid = pairing(&ciphertext.u, signature);
+   
     let ibe_contract = IIBE{address:ibe_contract_addr};
-    let data = ibe_contract.decrypt(Call::new(),  signature.to_compressed().to_vec(),
+    let data = ibe_contract.decrypt(Call::new(),  r_gid.to_bytes().to_vec(),
     ciphertext.v.clone(),
     ciphertext.w.clone(),
     ciphertext.u.to_compressed().to_vec()).unwrap();

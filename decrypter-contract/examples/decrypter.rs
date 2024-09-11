@@ -81,9 +81,9 @@ async fn main() -> eyre::Result<()> {
     let binding = decrypter.decrypt(c, sk).gas_price(100000000).gas(29000000);
 
     let out = binding.send().await?;
-    println!("{:?}",out);
-    // let result = String::from_utf8(out).unwrap();
-    // println!("{:?}", result);
-    // assert_eq!(result, "Hello World");
+    //println!("{:?}",out);
+    let result = String::from_utf8(out).unwrap();
+    println!("{:?}", result);
+    assert_eq!(result, "Hello World");
     Ok(())
 }
