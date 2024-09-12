@@ -1,5 +1,39 @@
+# Gas Consumption
 
-# Arbitrum Contracts Documentation
+The decryption process involves 5 contracts. Below is a breakdown of each contract and their respective gas consumption:
+
+### 1. **IBE Contract (Hashing)**
+- **Functionality:** Verifies the correctness of the ciphertext based on the Boneh-Franklin Identity-Based Encryption (BF-IBE) algorithm. It calculates a hash over the message and sigma, multiplies it by `P`, and verifies that the result matches the `U` component in the ciphertext.
+- **Gas Consumption:** 1,587,984
+  - **Key Contributor:** Scalar and G1 point multiplication, consuming 1,366,619 gas.
+
+### 2. **IBE Contract**
+- **Functionality:** Decrypts the ciphertext and recovers the message (which is the symmetric key for the second layer of encryption). It leverages the IBE Contract (Hashing) for ciphertext validation.
+- **Gas Consumption:** 1,743,116 (1,587,984 of this comes from the IBE Contract (Hashing))
+  - **Note:** The majority of the gas consumption comes from the hashing contract.
+
+### 3. **ChaCha20 MAC Contract**
+- **Functionality:** Computes the MAC for the ciphertext header using the key and ciphertext body.
+- **Gas Consumption:** 72,533
+  - **Note:** Minimal gas usage.
+
+### 4. **ChaCha20 Decryption Contract**
+- **Functionality:** Performs symmetric key decryption using the provided key and returns the plaintext.
+- **Gas Consumption:** 54,799
+  - **Note:** Minimal gas usage.
+
+### 5. **Decryption Interface Contract**
+- **Functionality:** Serves as the main interface for the decryption process. It accepts the decryption key and ciphertext, invoking the appropriate contracts to perform the full decryption.
+- **Gas Consumption:** 9,187,356
+  - **Breakdown:**
+    - IBE, MAC, and ChaCha20 contracts: As described above.
+    - 1,564,170: Deserializing the decryption key.
+    - 5,444,972: Pairing operation.
+    - 458,773: Deserializing the ciphertext.
+
+
+
+# Arbitrum Contracts Documentation: [to be updated...]
 
 This documentation provides an overview of the contracts used for decryption on the Arbitrum platform. To accommodate the contract size limit on Arbitrum, the decryption functionality is distributed across six distinct contracts, each responsible for a specific aspect of the decryption process.
 
