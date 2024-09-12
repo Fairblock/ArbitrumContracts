@@ -1,8 +1,6 @@
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
 
-/// Initializes a custom, global allocator for Rust programs compiled to WASM.
-
 use base64::{engine::general_purpose, Engine};
 use ic_bls12_381::{G1Affine, G2Affine,pairing};
 use ethabi::Token;
@@ -18,11 +16,8 @@ use stylus_sdk::{
 
 use stylus_sdk::call::Call;
 
-// use ibe::{decrypt, Ciphertext};
-use sha2::Sha256;
-
 use std::io::{self, BufRead, BufReader};
-use std::io::{Read, Write};
+
 
 sol_storage! {
     #[entrypoint]
@@ -90,8 +85,14 @@ pub struct Ciphertext {
 }
 
 struct Header {
-    recipients: Vec<Box<Stanza>>, // Vec of boxed (heap-allocated) Stanza objects
-    mac: Vec<u8>,                 // Vec<u8> is equivalent to a slice of bytes ([]byte in Go)
+    recipients: Vec<Box<Stanza>>, 
+    mac: Vec<u8>,                
+}
+#[derive(Clone, Deserialize)]
+struct Stanza {
+    type_: String, 
+    args: Vec<String>,
+    body: Vec<u8>,
 }
 
 fn split_args(line: &[u8]) -> (String, Vec<String>) {
@@ -129,14 +130,14 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
         let bytes_read = rr.read_until(b'\n', &mut line_bytes)?;
         if bytes_read == 0 {
             break;
-        } // End of file or error
+        } 
 
         let line = String::from_utf8_lossy(&line_bytes).into_owned();
 
         if line.as_bytes().starts_with(FOOTER_PREFIX) {
             let (prefix, args) = split_args(&line.as_bytes());
             if prefix.as_bytes() != FOOTER_PREFIX || args.len() != 1 {}
-            h.mac = decode_string(&args[0]); // Assuming decode_string is defined
+            h.mac = decode_string(&args[0]);
             break;
         } else if line.as_bytes().starts_with(RECIPIENT_PREFIX) {
             r = Some(Stanza {
@@ -157,7 +158,7 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
             h.recipients[0].body.extend_from_slice(&b);
 
             if b.len() < BYTES_PER_LINE {
-                r = None; // Only the last line of a body can be short
+                r = None; 
             }
         } else {
         }
@@ -174,12 +175,7 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
     Ok((h, payload))
 }
 
-#[derive(Clone, Deserialize)]
-struct Stanza {
-    type_: String, // 'type' is a reserved keyword in Rust, so we use 'type_'
-    args: Vec<String>,
-    body: Vec<u8>,
-}
+
 
 pub fn Decrypt<'a>(
     sk: &G2Affine,
@@ -202,11 +198,11 @@ pub fn Decrypt<'a>(
     }
     let mut nonce = vec![0u8; 16];
 
-    payload.read_exact(&mut nonce).unwrap(); // Handle potential errors properly
+    payload.read_exact(&mut nonce).unwrap(); 
 
     let mut s: Vec<u8> = vec![0];
     let _ = payload.read_to_end(&mut s);
-    // call new_reader or decrypter
+  
    
     let decrypter_contract = IDecrypterChacha20{address:decrypter_contract_addr};
     let msg = decrypter_contract.decrypter(Call::new(),file_key.clone(),nonce,s).unwrap();
@@ -216,12 +212,12 @@ pub fn Decrypt<'a>(
 }
 
 fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> Vec<u8>{
-    // Check stanza length and type
+  
     if stanzas.len() != 1 {
         return (vec![]);
     }
 
-    // Convert bytes to ciphertext and perform the unlock operation
+
     let ciphertext = bytes_to_ciphertext(&stanzas[0].body);
 
     (unlock(sk, &ciphertext, ibe_contract))
@@ -236,7 +232,7 @@ fn convert_slice_to_array(slice: &[u8]) -> &[u8; 48] {
     array_ref
 }
 
-// The Rust function
+
 fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
     let exp_len = kyber_point_len + cipher_v_len + cipher_w_len;
     if b.len() != exp_len {
