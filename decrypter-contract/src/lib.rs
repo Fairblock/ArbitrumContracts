@@ -2,22 +2,49 @@
 extern crate alloc;
 
 use base64::{engine::general_purpose, Engine};
-use ic_bls12_381::{G1Affine, G2Affine,pairing};
 use ethabi::Token;
+use ic_bls12_381::{pairing, G1Affine, G2Affine};
 use serde::Deserialize;
+use std::io::{self, BufRead, BufReader};
 use std::{io::Cursor, str::FromStr};
 use stylus_sdk::alloy_primitives::Address;
 use stylus_sdk::alloy_sol_types;
+use stylus_sdk::call::Call;
 use stylus_sdk::{
     call::call,
     prelude::{sol_interface, sol_storage},
     stylus_proc::{entrypoint, external},
 };
+use std::io::{Read, Write};
+const INTRO: &str = "age-encryption.org/v1";
 
-use stylus_sdk::call::Call;
+const RECIPIENT_PREFIX: &[u8] = b"->";
 
-use std::io::{self, BufRead, BufReader};
+const FOOTER_PREFIX: &[u8] = b"---";
 
+const COLUMNS_PER_LINE: usize = 64;
+const BYTES_PER_LINE: usize = COLUMNS_PER_LINE / 4 * 3;
+
+const kyber_point_len: usize = 48;
+const cipher_v_len: usize = 32;
+const cipher_w_len: usize = 32;
+
+pub struct Ciphertext {
+    pub u: G1Affine,
+    pub v: Vec<u8>,
+    pub w: Vec<u8>,
+}
+
+struct Header {
+    recipients: Vec<Box<Stanza>>,
+    mac: Vec<u8>,
+}
+#[derive(Clone, Deserialize)]
+struct Stanza {
+    type_: String,
+    args: Vec<String>,
+    body: Vec<u8>,
+}
 
 sol_storage! {
     #[entrypoint]
@@ -64,37 +91,6 @@ impl Decrypter {
     }
 }
 
-// Constants
-const INTRO: &str = "age-encryption.org/v1";
-
-const RECIPIENT_PREFIX: &[u8] = b"->";
-
-const FOOTER_PREFIX: &[u8] = b"---";
-
-const COLUMNS_PER_LINE: usize = 64;
-const BYTES_PER_LINE: usize = COLUMNS_PER_LINE / 4 * 3;
-
-const kyber_point_len: usize = 48;
-const cipher_v_len: usize = 32;
-const cipher_w_len: usize = 32;
-
-pub struct Ciphertext {
-    pub u: G1Affine,
-    pub v: Vec<u8>,
-    pub w: Vec<u8>,
-}
-
-struct Header {
-    recipients: Vec<Box<Stanza>>, 
-    mac: Vec<u8>,                
-}
-#[derive(Clone, Deserialize)]
-struct Stanza {
-    type_: String, 
-    args: Vec<String>,
-    body: Vec<u8>,
-}
-
 fn split_args(line: &[u8]) -> (String, Vec<String>) {
     let line_str = String::from_utf8_lossy(line);
     let trimmed_line = line_str.trim_end_matches('\n');
@@ -115,7 +111,6 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
     let mut rr = BufReader::new(input);
     let mut line = String::new();
 
-    // Read the intro line
     rr.read_line(&mut line)?;
     if line.trim_end() != INTRO {}
 
@@ -130,7 +125,7 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
         let bytes_read = rr.read_until(b'\n', &mut line_bytes)?;
         if bytes_read == 0 {
             break;
-        } 
+        }
 
         let line = String::from_utf8_lossy(&line_bytes).into_owned();
 
@@ -158,7 +153,7 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
             h.recipients[0].body.extend_from_slice(&b);
 
             if b.len() < BYTES_PER_LINE {
-                r = None; 
+                r = None;
             }
         } else {
         }
@@ -175,8 +170,6 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
     Ok((h, payload))
 }
 
-
-
 pub fn Decrypt<'a>(
     sk: &G2Affine,
     src: &'a mut dyn Read,
@@ -184,39 +177,45 @@ pub fn Decrypt<'a>(
     decrypter_contract_addr: Address,
     mac_contract_addr: Address,
 ) -> Vec<u8> {
-    // Parsing header and payload
     let (hdr, mut payload) = parse(src).unwrap();
-   
+
     let file_key = unwrap(sk, &[*hdr.recipients[0].clone()], ibe_contract_addr);
-  
-   
-    let mac_contract = IMacChacha20{address:mac_contract_addr};
-    let mac = mac_contract.headermac(Call::new(),file_key.clone(),hdr.recipients[0].clone().body).unwrap();
-   
+
+    let mac_contract = IMacChacha20 {
+        address: mac_contract_addr,
+    };
+    let mac = mac_contract
+        .headermac(
+            Call::new(),
+            file_key.clone(),
+            hdr.recipients[0].clone().body,
+        )
+        .unwrap();
+
     if mac.to_vec() != hdr.mac {
         return vec![];
     }
     let mut nonce = vec![0u8; 16];
 
-    payload.read_exact(&mut nonce).unwrap(); 
+    payload.read_exact(&mut nonce).unwrap();
 
     let mut s: Vec<u8> = vec![0];
     let _ = payload.read_to_end(&mut s);
-  
-   
-    let decrypter_contract = IDecrypterChacha20{address:decrypter_contract_addr};
-    let msg = decrypter_contract.decrypter(Call::new(),file_key.clone(),nonce,s).unwrap();
-  
-   
+
+    let decrypter_contract = IDecrypterChacha20 {
+        address: decrypter_contract_addr,
+    };
+    let msg = decrypter_contract
+        .decrypter(Call::new(), file_key.clone(), nonce, s)
+        .unwrap();
+
     msg
 }
 
-fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> Vec<u8>{
-  
+fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> Vec<u8> {
     if stanzas.len() != 1 {
         return (vec![]);
     }
-
 
     let ciphertext = bytes_to_ciphertext(&stanzas[0].body);
 
@@ -231,7 +230,6 @@ fn convert_slice_to_array(slice: &[u8]) -> &[u8; 48] {
     let array_ref: &[u8; 48] = slice.try_into().map_err(|_| "Failed to convert").unwrap();
     array_ref
 }
-
 
 fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
     let exp_len = kyber_point_len + cipher_v_len + cipher_w_len;
@@ -254,18 +252,21 @@ fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
     ct
 }
 
-fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Address) -> Vec<u8>{
-
+fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Address) -> Vec<u8> {
     let r_gid = pairing(&ciphertext.u, signature);
-   
-    let ibe_contract = IIBE{address:ibe_contract_addr};
-    let data = ibe_contract.decrypt(Call::new(),  r_gid.to_bytes().to_vec(),
-    ciphertext.v.clone(),
-    ciphertext.w.clone(),
-    ciphertext.u.to_compressed().to_vec()).unwrap();
-  
+
+    let ibe_contract = IIBE {
+        address: ibe_contract_addr,
+    };
+    let data = ibe_contract
+        .decrypt(
+            Call::new(),
+            r_gid.to_bytes().to_vec(),
+            ciphertext.v.clone(),
+            ciphertext.w.clone(),
+            ciphertext.u.to_compressed().to_vec(),
+        )
+        .unwrap();
+
     data
 }
-
-
-
