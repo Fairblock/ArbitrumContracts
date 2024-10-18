@@ -45,4 +45,4 @@ The solidity version implements a simple example of a contract which allows for 
 Both examples can be tested using the provided `test.sh` files in their corresponding folders.
 
 For all tests, the contracts will be deployed on Arbitrum testnet by default but the RPC url can be modified in the `test.sh` and example files. Moreover, the private key (`sk`) should be set to the private key of an account on Arbitrum testnet which has enough funds to cover the gas fees for deploying and calling the contracts.
-Note that the addresses for the deployed contracts are hardcoded in the `decrypter-contract` and `ibe-contract` and also in the test scripts for the two test contracts. They can be replaced with newly deployed contracts if needed.
+Note that the addresses for the deployed contracts are hardcoded in the `decrypter-contract`, `ibe-contract`, and also in the test scripts for the two test contracts. They can be replaced with newly deployed contracts if needed.
