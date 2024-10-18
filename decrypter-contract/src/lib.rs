@@ -107,7 +107,7 @@ impl Decrypter {
                 )
             })?;
 
-        let mac_contract = Address::from_str("0x6df2dbf827c938f3276b09a2a096be6249c2e996")
+        let mac_contract = Address::from_str("0x4374b294009dc876e4c5c2ef10acc40fe7e9d136")
             .map_err(|_| {
                return stylus_sdk::call::Error::Revert("Invalid mac_contract address".as_bytes().to_vec())
             })?;
@@ -179,9 +179,10 @@ pub fn decrypter<'a>(
 }
 
 fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error> {
-    if stanzas.len() != 1 {
+    let exp_len = KYBER_POINT_LEN + CIPHER_V_LEN + CIPHER_W_LEN;
+    if stanzas.len() != 1 && stanzas[0].body.len() != exp_len {
         return Err(stylus_sdk::call::Error::Revert(
-            "Chacha20 decryption contract error".as_bytes().to_vec()
+            "Wrong length".as_bytes().to_vec()
         ));
     }
     let ciphertext = bytes_to_ciphertext(&stanzas[0].body);
@@ -207,16 +208,12 @@ fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Addr
 }
 
 fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
-    let exp_len = KYBER_POINT_LEN + CIPHER_V_LEN + CIPHER_W_LEN;
-    if b.len() != exp_len {
-        return Ciphertext{u:G1Affine::default(),v:vec![],w:vec![]};
-    }
 
     let kyber_point = &b[0..KYBER_POINT_LEN];
     let cipher_v = &b[KYBER_POINT_LEN..KYBER_POINT_LEN + CIPHER_V_LEN];
     let cipher_w = &b[KYBER_POINT_LEN + CIPHER_V_LEN..];
 
-    let u: G1Affine = G1Affine::from_compressed(convert_slice_to_array(kyber_point)).unwrap();
+    let u: G1Affine = G1Affine::from_compressed(kyber_point.try_into().unwrap()).unwrap();
 
     let ct = Ciphertext {
         u,
@@ -245,14 +242,6 @@ fn decode_string(s: &str) -> Vec<u8> {
         return vec![];
     }
     return decoded.unwrap();
-}
-
-fn convert_slice_to_array(slice: &[u8]) -> &[u8; 48] {
-    if slice.len() != 48 {
-        return &[0u8; 48];
-    }
-    let array_ref: &[u8; 48] = slice.try_into().map_err(|_| "Failed to convert").unwrap();
-    array_ref
 }
 
 
