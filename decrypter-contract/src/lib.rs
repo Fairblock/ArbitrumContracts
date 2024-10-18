@@ -107,7 +107,7 @@ impl Decrypter {
                 )
             })?;
 
-        let mac_contract = Address::from_str("0xe88a0c935ef99a746c07788dc960b268f8743700")
+        let mac_contract = Address::from_str("0x6df2dbf827c938f3276b09a2a096be6249c2e996")
             .map_err(|_| {
                return stylus_sdk::call::Error::Revert("Invalid mac_contract address".as_bytes().to_vec())
             })?;

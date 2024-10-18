@@ -87,33 +87,19 @@ struct Stanza {
 }
 
 impl Stanza {
-    fn marshal<'a, W: Write>(&'a self, w: &'a mut W) -> &mut W {
-        write!(w, "{}", "->").expect("Not written");
-
-        write!(w, " {}", self.type_).expect("Not written");
-
+    fn marshal<W: Write>(&self, w: &mut W) -> io::Result<()> {
+        write!(w, "->")?;
+        write!(w, " {}", self.type_)?;
         for arg in &self.args {
-            write!(w, " {}", arg).expect("Not written");
+            write!(w, " {}", arg)?;
         }
-        writeln!(w).expect("Not written");
-        let b = self.body.clone();
-        let encoded: String = general_purpose::STANDARD_NO_PAD.encode(b.as_slice());
-        let l = encoded.as_bytes().len() - 2;
-        let enc = &encoded.as_bytes()[..l];
-        let mut enc2 = &encoded.as_bytes()[l..];
-
-        let new = process_chunks_and_append(enc);
-
-        let mut ff: String = String::from_str("").unwrap();
-        let _ = new.as_slice().read_to_string(&mut ff);
-        write!(w, "{}", ff).expect("Not written");
-
-        let mut f: String = String::from_str("").unwrap();
-        let _ = enc2.read_to_string(&mut f);
-        write!(w, "{}", f).expect("Not written");
-        writeln!(w).expect("Not written");
-
-        w
+        writeln!(w)?;
+        let encoded = general_purpose::STANDARD_NO_PAD.encode(&self.body);
+        for chunk in encoded.as_bytes().chunks(64) {
+            w.write_all(chunk)?;
+            writeln!(w)?;
+        }
+        Ok(())
     }
 }
 
