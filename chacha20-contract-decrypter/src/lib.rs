@@ -21,7 +21,7 @@ sol_storage! {
 /// # Parameters
 ///
 /// - `key`: A `Vec<u8>` containing the symmetric key. It should be 32 bytes.
-/// - `nonce`: A `Vec<u8>` containing the nonce. It should be 12 bytes.
+/// - `nonce`: A `Vec<u8>` containing the nonce. It should be 16 bytes.
 /// - `ciphertext`: A `Vec<u8>` representing the ciphertext to be decrypted.
 ///
 /// # Returns
@@ -36,7 +36,7 @@ impl DecrypterChacha20 {
         ciphertext: Vec<u8>,
     ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
         if key.len() != 32 || nonce.len() != 16 || ciphertext.len() < 2 {
-            return Err(stylus_sdk::call::Error::Revert(vec![1]));
+            return Err(stylus_sdk::call::Error::Revert("Wrong input length".as_bytes().to_vec()));
         }
         let key = stream_key(key.as_slice(), nonce.as_slice());
         let aead_key = Key::from_slice(key.as_slice());
@@ -44,7 +44,7 @@ impl DecrypterChacha20 {
         let n = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
         let plain = chacha20
             .decrypt(&Nonce::from_slice(&n), &ciphertext[0..])
-            .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
+            .map_err(|_| stylus_sdk::call::Error::Revert("decryption error".as_bytes().to_vec()))?;
 
         Ok(plain)
     }
