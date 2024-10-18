@@ -57,9 +57,7 @@ async fn main() -> eyre::Result<()> {
  
     let hasher = Hasher::new(address, client);
     let binding = hasher
-        .verify(sigma,msg,cu)
-        .gas_price(100000000)
-        .gas(29000000);
+        .verify(sigma,msg,cu);
 
     let out = binding.call().await?;
     

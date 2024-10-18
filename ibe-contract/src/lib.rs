@@ -60,7 +60,7 @@ impl IBE {
         }
 
         let hashing_contract_addr: Address =
-            Address::from_str("0x6e50a9114406678ecc3d1731eb666d203e263bf9")
+            Address::from_str("0xb9c3404cc28e76d9406e75695de617ba3d63648d")
                 .map_err(|_| stylus_sdk::call::Error::Revert("Invalid hasher address".as_bytes().to_vec()))?;
 
         let sigma = {

@@ -58,23 +58,20 @@ impl Hasher {
 
 pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
     let mut hasher = sha2::Sha256::new();
-
-
     hasher.update(b"IBE-H3");
-    hasher.update(sigma);
-    hasher.update(msg);
-    let buffer = hasher.finalize_reset();
+    hasher.update(&sigma);
+    hasher.update(&msg);
+    let initial_hash = hasher.finalize_reset();
 
-   
     let hashable = BigInt::new(Sign::Plus, Vec::new());
     let canonical_bit_len = (hashable.bits() + 7) / 8 * 8;
     let actual_bit_len = hashable.bits();
     let to_mask = canonical_bit_len - actual_bit_len;
 
-    for i in 1..65535u16 {
-        let iter = i.to_le_bytes();
-        hasher.update(&iter);
-        hasher.update(&buffer);
+    for i in 1..=65535u16 {
+        hasher.update(&i.to_le_bytes());
+        hasher.update(&initial_hash);
+        
         let mut hashed = hasher.finalize_reset().to_vec();
 
         if hashable.to_bytes_be().1[0] & 0x80 != 0 {
@@ -84,29 +81,14 @@ pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Err
             hashed[l - 1] >>= to_mask;
         }
 
-        hashed[0] = hashed[0] / 2;
+        hashed[0] /= 2;
         hashed.reverse();
 
-       
-        let v = BigInt::from_bytes_le(Sign::Plus, &hashed);
-        let vec = v.to_bytes_le().1;
-        if vec.len() < 32 {
-            let my_error = stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec());
-            return Err(my_error);
-        }
-
-        let array: [u8; 32] = vec[..32].try_into().map_err(|_| {
-            let my_error = stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec());
-            my_error
-        })?;
-
-        let sc = Scalar::from_bytes(&array);
-
-        if sc.is_some().into() {
-            return Ok(array.to_vec());
+        let scalar_option = Scalar::from_bytes(&hashed[..32].try_into().unwrap());
+        if scalar_option.is_some().into() {
+            return Ok(hashed[..32].to_vec());
         }
     }
 
-    let my_error = stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec());
-    Err(my_error)
+    Err(stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec()))
 }
