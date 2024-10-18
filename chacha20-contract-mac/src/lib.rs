@@ -1,21 +1,15 @@
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
-
 use hmac::{Hmac, Mac, NewMac};
 use serde::Deserialize;
 use std::io::Write;
 use std::io::{self, Read};
 use std::str::FromStr;
-
-use base64::{engine::general_purpose, write::EncoderWriter, Engine};
+use base64::{engine::general_purpose, Engine};
 use hkdf::Hkdf;
 use sha2::Sha256;
 use stylus_sdk::prelude::*;
 const INTRO: &str = "age-encryption.org/v1";
-
-const RECIPIENT_PREFIX: &[u8] = b"->";
-
-const FOOTER_PREFIX: &[u8] = b"---";
 
 sol_storage! {
     #[entrypoint]
@@ -24,11 +18,22 @@ sol_storage! {
     }
 }
 
-#[external]
+/// Calculates the header mac
+///
+/// # Parameters
+///
+/// - `key`: A `Vec<u8>` containing the symmetric key. It should be 32 bytes.
+/// - `body`: A `Vec<u8>` containing the body of the ciphertext.
 
+///
+/// # Returns
+///
+/// - `Ok(Vec<u8>)`: If successful, returns a `Vec<u8>` containing the mac.
+/// - `Err(stylus_sdk::call::Error)`: If an error occurs during decryption, it returns an error from the `stylus_sdk::call::Error` type.
+#[public]
 impl MacChacha20 {
-    fn headermac(file_key: Vec<u8>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
-        if file_key.len() != 32 || body.is_empty() {
+    fn headermac(key: Vec<u8>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
+        if key.len() != 32 || body.is_empty() {
             return Err(stylus_sdk::call::Error::Revert(vec![1]));
         }
 
@@ -41,7 +46,7 @@ impl MacChacha20 {
             recipients: vec![Box::new(result)],
         };
 
-        let h = Hkdf::<Sha256>::new(None, &file_key);
+        let h = Hkdf::<Sha256>::new(None, &key);
         let mut hmac_key = [0u8; 32];
         h.expand(b"header", &mut hmac_key)
             .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
@@ -57,12 +62,8 @@ impl MacChacha20 {
         Ok(hh.finalize().into_bytes().to_vec())
     }
 }
-#[derive(Clone, Deserialize)]
-struct Stanza {
-    type_: String,
-    args: Vec<String>,
-    body: Vec<u8>,
-}
+
+
 fn process_chunks_and_append(data: &[u8]) -> Vec<u8> {
     const CHUNK_SIZE: usize = 64;
     let mut result = Vec::new();
@@ -70,23 +71,31 @@ fn process_chunks_and_append(data: &[u8]) -> Vec<u8> {
     for chunk in data.chunks(CHUNK_SIZE) {
         result.extend_from_slice(chunk);
 
-        if (chunk.len() == 64) {
+        if chunk.len() == 64 {
             result.push(10);
         }
     }
 
     result
 }
+
+#[derive(Clone, Deserialize)]
+struct Stanza {
+    type_: String,
+    args: Vec<String>,
+    body: Vec<u8>,
+}
+
 impl Stanza {
     fn marshal<'a, W: Write>(&'a self, w: &'a mut W) -> &mut W {
-        write!(w, "{}", "->");
+        write!(w, "{}", "->").expect("Not written");
 
-        write!(w, " {}", self.type_);
+        write!(w, " {}", self.type_).expect("Not written");
 
         for arg in &self.args {
-            write!(w, " {}", arg);
+            write!(w, " {}", arg).expect("Not written");
         }
-        writeln!(w);
+        writeln!(w).expect("Not written");
         let b = self.body.clone();
         let encoded: String = general_purpose::STANDARD_NO_PAD.encode(b.as_slice());
         let l = encoded.as_bytes().len() - 2;
@@ -96,13 +105,13 @@ impl Stanza {
         let new = process_chunks_and_append(enc);
 
         let mut ff: String = String::from_str("").unwrap();
-        new.as_slice().read_to_string(&mut ff);
-        write!(w, "{}", ff);
+        let _ = new.as_slice().read_to_string(&mut ff);
+        write!(w, "{}", ff).expect("Not written");
 
         let mut f: String = String::from_str("").unwrap();
-        enc2.read_to_string(&mut f);
-        write!(w, "{}", f);
-        writeln!(w);
+        let _ = enc2.read_to_string(&mut f);
+        write!(w, "{}", f).expect("Not written");
+        writeln!(w).expect("Not written");
 
         w
     }

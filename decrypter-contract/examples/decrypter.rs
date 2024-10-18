@@ -5,15 +5,10 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::Address,
 };
-use eyre::eyre;
-
 use std::env;
-use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-use stylus_sdk::call::*;
+
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -81,9 +76,8 @@ async fn main() -> eyre::Result<()> {
     let binding = decrypter.decrypt(c, sk).gas_price(100000000).gas(29000000);
 
     let out = binding.call().await?;
-    //println!("{:?}",out);
     let result = String::from_utf8(out).unwrap();
-    println!("{:?}", result);
+    println!("Decrypted result: {:?} - Expected result: Hello World", result);
     assert_eq!(result, "Hello World");
     Ok(())
 }

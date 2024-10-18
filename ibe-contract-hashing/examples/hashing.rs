@@ -5,9 +5,7 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::Address,
 };
-
 use std::env;
-
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -65,7 +63,7 @@ async fn main() -> eyre::Result<()> {
 
     let out = binding.call().await?;
     
-    println!("{:?}",out);
+    println!("output : {:?} - expected: true",out);
     assert!(out);
     Ok(())
 }

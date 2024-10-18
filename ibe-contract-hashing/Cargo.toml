@@ -3,25 +3,21 @@ name = "stylus-bls"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/OffchainLabs/stylus-hello-world"
-repository = "https://github.com/OffchainLabs/stylus-hello-world"
 keywords = ["arbitrum", "ethereum", "stylus", "alloy"]
-description = "Stylus hello world example"
+
 
 [dependencies]
 
 stylus-sdk = "0.6.0"
 wasm-bindgen = "0.2"
-
 num-bigint = {version = "0.4", default-features = false}
 ark-bls12-381 = "0.4.0"
 ic_bls12_381 = {version = "0.8.0", default-features = false, features = ["groups", "alloc", "experimental"]}
-#bls12_381 = { version = "0.7", default-features = false, features = ["groups", "pairings", "alloc", "experimental"] }
 ark-serialize="0.4.2"
 sha2 = "0.9"
 hex = "0.4.3"
 wee_alloc = "0.4.5"
-# arbitrum-dec = { path = "../arbitrum-dec" }
+
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }
 ethers = { version = "2.0.14", features = ["openssl"] }
@@ -47,16 +43,3 @@ debug = false            # no debug data
 rpath = false            # no run-time search path
 debug-assertions = false # prune debug assertions
 incremental = false      # no incremental builds
-
-[toolchain]
-channel = "1.80.1"  # Specify the exact Rust version
-components = ["rustfmt", "clippy"]
-targets = ["wasm32-unknown-unknown"]
-
-[lib]
-crate-type = ["cdylib"]
-
-
-
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Os", "--enable-reference-types"]

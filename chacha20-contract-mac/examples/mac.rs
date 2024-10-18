@@ -5,15 +5,9 @@ use ethers::{
     signers::{LocalWallet, Signer},
     types::Address,
 };
-use eyre::eyre;
-
 use std::env;
-use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-use stylus_sdk::call::*;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -33,27 +27,21 @@ async fn main() -> eyre::Result<()> {
 
     abigen!(
         MacChacha20,
-        r#"[
-      
-    
-     function headermac(uint8[] memory file_key, uint8[] memory body) external view returns (uint8[] memory)
-    
-      
+        r#"[ 
+     function headermac(uint8[] memory key, uint8[] memory body) external view returns (uint8[] memory)
         ]"#
     );
 
     let provider = Provider::<Http>::try_from(rpc_url)?;
     let address: Address = program_address.parse()?;
-
     let wallet_key = arg2.as_str();
-
     let wallet = LocalWallet::from_str(&wallet_key)?;
     let chain_id = provider.get_chainid().await?.as_u64();
     let client = Arc::new(SignerMiddleware::new(
         provider,
         wallet.clone().with_chain_id(chain_id),
     ));
-    let file_key: Vec<u8> = vec![
+    let key: Vec<u8> = vec![
         212, 19, 27, 222, 185, 232, 136, 98, 249, 3, 118, 190, 124, 91, 65, 210, 99, 96, 200, 195,
         91, 90, 61, 245, 82, 158, 35, 19, 139, 96, 47, 137,
     ];
@@ -71,12 +59,12 @@ async fn main() -> eyre::Result<()> {
     ];
     let mac_contract = MacChacha20::new(address, client);
     let binding = mac_contract
-        .headermac(file_key, body)
+        .headermac(key, body)
         .gas_price(100000000)
         .gas(29000000);
 
     let out = binding.call().await?;
-    println!("out: {:?} - mac: {:?}", out, mac);
+    println!("output mac: {:?} - expected mac: {:?}", out, mac);
     assert_eq!(mac, out);
     Ok(())
 }

@@ -3,14 +3,11 @@ name = "decrypter"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/OffchainLabs/stylus-hello-world"
-repository = "https://github.com/OffchainLabs/stylus-hello-world"
 keywords = ["arbitrum", "ethereum", "stylus", "alloy"]
-description = "Stylus hello world example"
+
 
 [dependencies]
 stylus-sdk = { version = "0.6.0", features = ["docs"] }
-#bls12_381_plus = { version = "0.8.17", default-features = false, features = ["groups","pairings"]}
 ic_bls12_381 = {version = "0.10.0", default-features = false, features = ["groups","pairings"]}
 serde = { version = "1.0", features = ["derive"] }
 ark-serialize="0.4.2"
@@ -20,16 +17,10 @@ ark-test-curves="0.4.2"
 ark-ec="0.4.2"
 ark-bls12-381="0.4.0"
 base64 = {version = "0.22.1"}
-
-
 ethabi={version = "18.0.0", default-features = false}
-
 sha2 = {version = "0.10.8", default-features = false}
-
-
-
 wee_alloc = {version = "0.4.5", default-features = false}
-# arbitrum-dec = { path = "../arbitrum-dec" }
+
 
 [dev-dependencies]
 tokio = { version = "1.40.0", features = ["full"] }
@@ -59,17 +50,3 @@ debug = false            # no debug data
 rpath = false            # no run-time search path
 debug-assertions = false # prune debug assertions
 incremental = false      # no incremental builds
-
-
-[toolchain]
-channel = "1.80.1"  # Specify the exact Rust version
-components = ["rustfmt", "clippy"]
-targets = ["wasm32-unknown-unknown"]
-
-[lib]
-crate-type = ["cdylib"]
-
-
-
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Os", "--enable-reference-types"]

@@ -3,27 +3,20 @@ name = "chacha20mac"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/OffchainLabs/stylus-hello-world"
-repository = "https://github.com/OffchainLabs/stylus-hello-world"
 keywords = ["arbitrum", "ethereum", "stylus", "alloy"]
-description = "Stylus hello world example"
+
 
 [dependencies]
 
 stylus-sdk = "0.6.0"
-
 serde = { version = "1.0", features = ["derive"] }
-
 base64 = "0.21.4"
-
 hkdf = {version = "0.11", default-features = false}
-
 hmac = {version = "0.11", default-features = false}
 sha2 = {version = "0.9", default-features = false}
 hex = "0.4.3"
-
 wee_alloc = "0.4.5"
-# arbitrum-dec = { path = "../arbitrum-dec" }
+
 
 [dev-dependencies]
 tokio = { version = "1.12.0", features = ["full"] }

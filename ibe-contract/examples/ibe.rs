@@ -4,21 +4,18 @@ use ethers::{
     providers::{Http, Middleware, Provider},
     signers::{LocalWallet, Signer},
     types::Address,
-    utils::hex::ToHexExt,
 };
 
-use eyre::{eyre, Ok};
-use ic_bls12_381::{pairing, G1Affine, G1Projective, G2Affine, Scalar};
+use eyre::Ok;
+use ic_bls12_381::{pairing, G1Affine, G2Affine, Scalar};
 use num_bigint::{BigInt, Sign};
 use std::env;
-use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-const BLOCK_SIZE: usize = 32;
 use sha2::Digest;
-use stylus_sdk::{call::*, function_selector};
+
+const BLOCK_SIZE: usize = 32;
+
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -116,14 +113,14 @@ fn xor(a: &[u8], b: &[u8]) -> Vec<u8> {
 pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8; 32] {
     let mut hasher = sha2::Sha256::new();
 
-    // Hashing H3Tag, sigma and msg
+   
     hasher.update(b"IBE-H3");
     hasher.update(sigma);
     hasher.update(msg);
     let buffer = hasher.finalize_reset();
 
-    // Create a BigInt for hashable
-    let mut hashable = BigInt::new(Sign::Plus, Vec::new());
+
+    let hashable = BigInt::new(Sign::Plus, Vec::new());
     let canonical_bit_len = (hashable.bits() + 7) / 8 * 8;
     let actual_bit_len = hashable.bits();
     let to_mask = canonical_bit_len - actual_bit_len;
@@ -145,7 +142,7 @@ pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8; 32] {
         hashed[0] = hashed[0] / 2;
 
         hashed.reverse();
-        // Unmarshal and check if within the modulo
+     
         let v = BigInt::from_bytes_le(Sign::Plus, &hashed);
         let vec = v.to_bytes_le().1;
         let array: &[u8; 32] = vec
@@ -158,6 +155,5 @@ pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> [u8; 32] {
             return *array;
         }
     }
-    let my_error = stylus_sdk::call::Error::Revert(vec![0]);
     [0u8; 32]
 }

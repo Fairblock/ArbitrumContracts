@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "export-abi"), no_main)]
 extern crate alloc;
-
 use aead::Aead;
 use chacha20poly1305::{
     aead::{self, NewAead},
@@ -17,31 +16,42 @@ sol_storage! {
     }
 }
 
-#[external]
-
+/// Performs the symmetric key decryption.
+///
+/// # Parameters
+///
+/// - `key`: A `Vec<u8>` containing the symmetric key. It should be 32 bytes.
+/// - `nonce`: A `Vec<u8>` containing the nonce. It should be 12 bytes.
+/// - `ciphertext`: A `Vec<u8>` representing the ciphertext to be decrypted.
+///
+/// # Returns
+///
+/// - `Ok(Vec<u8>)`: If successful, returns a `Vec<u8>` containing the plaintext.
+/// - `Err(stylus_sdk::call::Error)`: If an error occurs during decryption, it returns an error from the `stylus_sdk::call::Error` type.
+#[public]
 impl DecrypterChacha20 {
     fn decrypter(
-        file_key: Vec<u8>,
+        key: Vec<u8>,
         nonce: Vec<u8>,
-        s: Vec<u8>,
+        ciphertext: Vec<u8>,
     ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
-        if file_key.len() != 32 || nonce.len() != 16 || s.len() < 2 {
+        if key.len() != 32 || nonce.len() != 16 || ciphertext.len() < 2 {
             return Err(stylus_sdk::call::Error::Revert(vec![1]));
         }
-        let key = stream_key(file_key.as_slice(), nonce.as_slice());
+        let key = stream_key(key.as_slice(), nonce.as_slice());
         let aead_key = Key::from_slice(key.as_slice());
-        let a = ChaCha20Poly1305::new(aead_key);
-        let nonce = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-        let plain = a
-            .decrypt(&Nonce::from_slice(&nonce), &s[1..])
+        let chacha20 = ChaCha20Poly1305::new(aead_key);
+        let n = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+        let plain = chacha20
+            .decrypt(&Nonce::from_slice(&n), &ciphertext[0..])
             .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
 
         Ok(plain)
     }
 }
 
-fn stream_key(file_key: &[u8], nonce: &[u8]) -> Vec<u8> {
-    let h = Hkdf::<Sha256>::new(Some(nonce), file_key);
+fn stream_key(key: &[u8], nonce: &[u8]) -> Vec<u8> {
+    let h = Hkdf::<Sha256>::new(Some(nonce), key);
     let mut stream_key = vec![0u8; 32];
 
     h.expand(b"payload", &mut stream_key)

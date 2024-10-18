@@ -3,24 +3,17 @@ name = "ibe"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/OffchainLabs/stylus-hello-world"
-repository = "https://github.com/OffchainLabs/stylus-hello-world"
 keywords = ["arbitrum", "ethereum", "stylus", "alloy"]
-description = "Stylus hello world example"
+
 
 [dependencies]
 
 stylus-sdk = { version = "0.6.0", features = ["docs"] }
-
 num-bigint = {version = "0.4", default-features = false}
 serde = { version = "1.0",  default-features = false, features = ["derive"] }
 ic_bls12_381 = {version = "0.10.0", default-features = false, features = ["groups", "pairings", "alloc", "experimental"]}
-# num-bigint = {version = "0.4", default-features = false}
-# ic_bls12_381 = {version = "0.8.0", default-features = false, features = ["groups", "experimental"]}
 serde_json ={version = "1.0.108", default-features = false, features = ["alloc"]}
 bls12_381_plus = {version = "0.7.0",  features = ["groups"]}
-# getrandom={version="0.2.15",features=["js"]}
-# ethers = { version = "2.0.14", features = ["openssl"] }
 sha2 = {version = "0.10.8", default-features = false}
 ethabi={version = "18.0.0", default-features = false}
 hex = "0.4.3" 
@@ -31,7 +24,7 @@ ethers = { version = "2.0.14", features = ["openssl"] }
 eyre = "0.6.8"
 ethabi={version = "18.0.0", default-features = false}
 wee_alloc = {version = "0.4.5"}
-# arbitrum-dec = { path = "../arbitrum-dec" }
+
 [[bin]]
 name = "ibe"
 path = "src/lib.rs"

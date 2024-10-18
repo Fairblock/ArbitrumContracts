@@ -3,24 +3,22 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use alloc::{format, vec};
+use alloc::vec;
 use core::str::FromStr;
 use stylus_sdk::function_selector;
 use stylus_sdk::prelude::sol_interface;
 use stylus_sdk::{
-    alloy_primitives::{hex::ToHexExt, Address},
+    alloy_primitives:: Address,
     alloy_sol_types,
-    call::{Call, MethodError},
+    call::Call,
 };
-
 use sha2::Digest;
-
-const BLOCK_SIZE: usize = 32;
-
 use stylus_sdk::{
     prelude::sol_storage,
     stylus_proc::{entrypoint, external},
 };
+
+const BLOCK_SIZE: usize = 32;
 
 sol_storage! {
     #[entrypoint]
@@ -35,6 +33,19 @@ sol_interface! {
     }
 }
 
+/// Performs the IBE decryption
+///
+/// # Parameters
+///
+/// - `r_gid`: A `Vec<u8>` containing the pairing of cu and decryption key.
+/// - `cv`: A `Vec<u8>` containing the cv part from ciphertext.
+/// - `cw`: A `Vec<u8>` containing the cw part from ciphertext.
+/// - `cu`: A `Vec<u8>` containing the cu part from ciphertext.
+///
+/// # Returns
+///
+/// - `Ok(Vec<u8>)`: If successful, returns a `Vec<u8>` containing the plaintext. 
+/// - `Err(stylus_sdk::call::Error)`: If an error occurs during decryption, it returns an error from the `stylus_sdk::call::Error` type.
 #[external]
 impl IBE {
     pub fn decrypt(
@@ -45,12 +56,12 @@ impl IBE {
         cu: Vec<u8>,
     ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
         if cu.len() != 48 || cv.len() > BLOCK_SIZE || cw.len() > BLOCK_SIZE {
-            return Err(stylus_sdk::call::Error::Revert(vec![1]));
+            return Err(stylus_sdk::call::Error::Revert("Invalid input length".as_bytes().to_vec()));
         }
 
         let hashing_contract_addr: Address =
             Address::from_str("0x6e50a9114406678ecc3d1731eb666d203e263bf9")
-                .map_err(|_| stylus_sdk::call::Error::Revert(vec![3]))?;
+                .map_err(|_| stylus_sdk::call::Error::Revert("Invalid hasher address".as_bytes().to_vec()))?;
 
         let sigma = {
             let mut hash = sha2::Sha256::new();
@@ -76,10 +87,10 @@ impl IBE {
         };
         let verify_res = hasher
             .verify(Call::new(), sigma.clone(), msg.clone(), cu)
-            .map_err(|_| stylus_sdk::call::Error::Revert(vec![5]))?;
+            .map_err(|_| stylus_sdk::call::Error::Revert("Hasher error".as_bytes().to_vec()))?;
 
         if !verify_res {
-            return Err(stylus_sdk::call::Error::Revert(vec![6]));
+            return Err(stylus_sdk::call::Error::Revert("Verfication failed".as_bytes().to_vec()));
         }
 
         Ok(msg)
