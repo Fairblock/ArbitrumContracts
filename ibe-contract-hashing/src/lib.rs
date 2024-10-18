@@ -91,12 +91,12 @@ pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Err
         let v = BigInt::from_bytes_le(Sign::Plus, &hashed);
         let vec = v.to_bytes_le().1;
         if vec.len() < 32 {
-            let my_error = stylus_sdk::call::Error::Revert(vec![3]);
+            let my_error = stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec());
             return Err(my_error);
         }
 
         let array: [u8; 32] = vec[..32].try_into().map_err(|_| {
-            let my_error = stylus_sdk::call::Error::Revert(vec![4]);
+            let my_error = stylus_sdk::call::Error::Revert("Hashing error".as_bytes().to_vec());
             my_error
         })?;
 
