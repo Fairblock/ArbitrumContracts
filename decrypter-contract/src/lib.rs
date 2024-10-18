@@ -100,7 +100,7 @@ impl Decrypter {
                 return stylus_sdk::call::Error::Revert("Invalid ibe_contract address".as_bytes().to_vec())
             })?;
 
-        let decrypter_contract = Address::from_str("0x9b93929e458dd949ef9e26743aa2465a2c8b4c13")
+        let decrypter_contract = Address::from_str("0x6429abf3a2bc7a8c74e2261c635c25406367749d")
             .map_err(|_| {
                return stylus_sdk::call::Error::Revert(
                     "Invalid decrypter_contract address".as_bytes().to_vec(),
