@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 # Private key
-sk=b327fa89f163dd2b3939385fe1190ce86e790f33d320f1512da5b481ec1ca1af
+sk=<PRIVATE_KEY>
 
 # Build the contract
 echo -e "${YELLOW}Building the DecrypterChacha20 contract...${NC}"

@@ -15,7 +15,7 @@ echo -e "${BLUE}Starting the deployment and interaction script...${NC}"
 
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc"
-PRIVATE_KEY=b327fa89f163dd2b3939385fe1190ce86e790f33d320f1512da5b481ec1ca1af
+PRIVATE_KEY=<PRIVATE_KEY>
 DECRYPTER=0x175243d50f99d494a9e8349529ca240e7c7e8586
 
 

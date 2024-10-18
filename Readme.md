@@ -1,4 +1,7 @@
-# Gas Consumption
+# Decryption Contracts
+This repository includes the contracts implemented to perform the IBE decryption process on Arbitrum chain. 
+
+## Contract Description and Gas Consumption
 
 The decryption process involves 5 contracts. Below is a breakdown of each contract and their respective gas consumption:
 
@@ -35,9 +38,6 @@ The decryption process involves 5 contracts. Below is a breakdown of each contra
 
 
 ## Testing
-This section outlines the process for testing the Arbitrum Contracts.
-
-### Overview
 In order to test each contract separately, there is a simple example implemented inside the `examples` folder in each contract's directory. There is also a `test.sh` script for each contract that deploys the contract and runs the example with it. 
 
 Moreover, to demonstrate how the contracts can be used from inside another contract (e.g. an application contract), two test contracts `test-contract-rust` and `test-contract-solidity` are provided. The rust version implements a basic auction application where bids are encrypted and will be decrypted using the decrypter contracts once the decryption key is provided. For simplicity of the testing process, the unnecessary checks are eliminated in the contract. 
