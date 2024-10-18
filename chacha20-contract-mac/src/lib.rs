@@ -34,7 +34,7 @@ sol_storage! {
 impl MacChacha20 {
     fn headermac(key: Vec<u8>, body: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Error> {
         if key.len() != 32 || body.is_empty() {
-            return Err(stylus_sdk::call::Error::Revert(vec![1]));
+            return Err(stylus_sdk::call::Error::Revert("Wrong input length".as_bytes().to_vec()));
         }
 
         let result = Stanza {
@@ -49,14 +49,14 @@ impl MacChacha20 {
         let h = Hkdf::<Sha256>::new(None, &key);
         let mut hmac_key = [0u8; 32];
         h.expand(b"header", &mut hmac_key)
-            .map_err(|_| stylus_sdk::call::Error::Revert(vec![2]))?;
+            .map_err(|_| stylus_sdk::call::Error::Revert("Key error".as_bytes().to_vec()))?;
 
         let mut hh = Hmac::<Sha256>::new_from_slice(&hmac_key)
-            .map_err(|_| stylus_sdk::call::Error::Revert(vec![3]))?;
+            .map_err(|_| stylus_sdk::call::Error::Revert("Hash error".as_bytes().to_vec()))?;
         let mut hmac_writer = HmacWriter::new(hh.clone());
 
         hdr.marshal_without_mac(&mut hmac_writer)
-            .map_err(|_| stylus_sdk::call::Error::Revert(vec![4]))?;
+            .map_err(|_| stylus_sdk::call::Error::Revert("Header error".as_bytes().to_vec()))?;
 
         hh = hmac_writer.0;
         Ok(hh.finalize().into_bytes().to_vec())
