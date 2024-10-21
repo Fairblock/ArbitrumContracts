@@ -95,19 +95,19 @@ impl Decrypter {
 
         let mut cursor = Cursor::new(c);
 
-        let ibe_contract = Address::from_str("0x61aabc5cad6babbccc3aff0484fa46435869dcc4")
+        let ibe_contract = Address::from_str("0x2dbbd6e1f0664af57bb41dcc920cc58f84153760")
             .map_err(|_| {
                 return stylus_sdk::call::Error::Revert("Invalid ibe_contract address".as_bytes().to_vec())
             })?;
 
-        let decrypter_contract = Address::from_str("0x6429abf3a2bc7a8c74e2261c635c25406367749d")
+        let decrypter_contract = Address::from_str("0x2ad22b866c08425bcb5a6b711212d2ba157a5df4")
             .map_err(|_| {
                return stylus_sdk::call::Error::Revert(
                     "Invalid decrypter_contract address".as_bytes().to_vec(),
                 )
             })?;
 
-        let mac_contract = Address::from_str("0x4374b294009dc876e4c5c2ef10acc40fe7e9d136")
+        let mac_contract = Address::from_str("0x0f98156b1ebabd5035c6763db79a10d9bc3096fe")
             .map_err(|_| {
                return stylus_sdk::call::Error::Revert("Invalid mac_contract address".as_bytes().to_vec())
             })?;

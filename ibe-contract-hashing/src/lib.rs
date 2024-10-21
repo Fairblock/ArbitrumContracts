@@ -63,23 +63,10 @@ pub fn h3(sigma: Vec<u8>, msg: Vec<u8>) -> Result<Vec<u8>, stylus_sdk::call::Err
     hasher.update(&msg);
     let initial_hash = hasher.finalize_reset();
 
-    let hashable = BigInt::new(Sign::Plus, Vec::new());
-    let canonical_bit_len = (hashable.bits() + 7) / 8 * 8;
-    let actual_bit_len = hashable.bits();
-    let to_mask = canonical_bit_len - actual_bit_len;
-
     for i in 1..=65535u16 {
         hasher.update(&i.to_le_bytes());
         hasher.update(&initial_hash);
-        
         let mut hashed = hasher.finalize_reset().to_vec();
-
-        if hashable.to_bytes_be().1[0] & 0x80 != 0 {
-            hashed[0] >>= to_mask;
-        } else {
-            let l = hashed.len();
-            hashed[l - 1] >>= to_mask;
-        }
 
         hashed[0] /= 2;
         hashed.reverse();
