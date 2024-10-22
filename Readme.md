@@ -91,7 +91,7 @@ cast --version
 #### 3. Install Stylus
 Stylus is required for deploying Rust contracts. Install it via Cargo:
 ```bash
-cargo install stylus
+cargo install --force cargo-stylus
 ```
 #### 4. Private Key Setup
 You will need a private key to interact with the blockchain. You can replace the <PRIVATE_KEY> placeholder in the scripts.
