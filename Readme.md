@@ -45,14 +45,14 @@ This project contains multiple contracts, each with its own test scripts and exa
 
 #### Contract Testing
 
-- **Rust Contract**: Implements a basic auction application where bids are encrypted and decrypted using decrypter contracts once the decryption key is provided. For simplicity, some checks have been removed. Therefore, this contract is only for showing how to use the decryption contracts and should not be used in production.
+- **Rust Contract**: Implements a basic auction application where bids are encrypted and decrypted using decrypter contracts once the decryption key is provided. For simplicity, some checks have been removed. This example is only to demonstrate how to use the decryption contracts and is not suitable for production use.
 - **Solidity Contract**: Implements a contract that allows the submission of encrypted messages and decrypts them once a key is submitted.
 
 Both contracts can be tested using their respective `test.sh` files in their corresponding folders.
 
 #### Network Configuration
 
-By default, all contracts will be deployed on the Arbitrum Sepolia testnet. However, the RPC URL can be modified in the `test.sh` scripts if you wish to use another network.
+By default, all contracts will be deployed on the Arbitrum testnet. However, the RPC URL can be modified in the `test.sh` scripts if you wish to use another network.
 
 #### Addresses and Private Key Setup
 
@@ -95,9 +95,6 @@ cargo install stylus
 ```
 #### 4. Private Key Setup
 You will need a private key to interact with the blockchain. You can replace the <PRIVATE_KEY> placeholder in the scripts.
-
-#### 5. Network Configuration
-By default, the contracts are deployed on the Sepolia Arbitrum Rollup network. You can modify the RPC URL in the test scripts to deploy the contracts on a different network if needed.
 
 ### Running Tests
 
