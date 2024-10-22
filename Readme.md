@@ -37,11 +37,75 @@ The decryption process involves 5 contracts. Below is a breakdown of each contra
 
 
 ## Testing
-In order to test each contract separately, there is a simple example implemented inside the `examples` folder in each contract's directory. There is also a `test.sh` script for each contract that deploys the contract and runs the example with it. 
 
-Moreover, to demonstrate how the contracts can be used from inside another contract (e.g. an application contract), two test contracts `test-contract-rust` and `test-contract-solidity` are provided. The rust version implements a basic auction application where bids are encrypted and will be decrypted using the decrypter contracts once the decryption key is provided. For simplicity of the testing process, the unnecessary checks are eliminated in the contract. 
-The solidity version implements a simple example of a contract which allows for submission of encrypted messages and decryption of them once the key is submitted.
-Both examples can be tested using the provided `test.sh` files in their corresponding folders.
 
-For all tests, the contracts will be deployed on Arbitrum testnet by default but the RPC url can be modified in the `test.sh` and example files. Moreover, the private key (`sk`) should be set to the private key of an account on Arbitrum testnet which has enough funds to cover the gas fees for deploying and calling the contracts.
-Note that the addresses for the deployed contracts are hardcoded in the `decrypter-contract`, `ibe-contract`, and also in the test scripts for the two test contracts. They can be replaced with newly deployed contracts if needed.
+This project contains multiple contracts, each with its own test scripts and examples for deployment and interaction on the blockchain. These tests demonstrate how the contracts can be used both independently and from within another contract (e.g., an application contract).
+
+### Overview
+
+#### Contract Testing
+
+- **Rust Contract**: Implements a basic auction application where bids are encrypted and decrypted using decrypter contracts once the decryption key is provided. For simplicity, some checks have been removed. Therefore, this contract is only for showing how to use the decryption contracts and should not be used in production.
+- **Solidity Contract**: Implements a contract that allows the submission of encrypted messages and decrypts them once a key is submitted.
+
+Both contracts can be tested using their respective `test.sh` files in their corresponding folders.
+
+#### Network Configuration
+
+By default, all contracts will be deployed on the Arbitrum Sepolia testnet. However, the RPC URL can be modified in the `test.sh` scripts if you wish to use another network.
+
+#### Addresses and Private Key Setup
+
+Addresses for the deployed contracts are hardcoded in the decrypter contract and ibe contract. You can modify these addresses by replacing them with newly deployed contract addresses if necessary. Ensure that you have a private key (`sk`) set to an account on the Arbitrum testnet (if testing on the testnet) that has enough funds to cover gas fees for deploying and interacting with the contracts.
+
+### Installation Requirements
+
+Before running the tests, ensure that the following dependencies and tools are installed:
+
+#### 1. Install Rust Nightly Toolchain
+
+The Rust test script uses a specific nightly version of Rust. Install and configure it by running:
+
+```bash
+rustup install nightly-2024-05-20
+rustup override set nightly-2024-05-20
+```
+
+You also need to install the WebAssembly target:
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+ #### 2. Install Foundry and Cast
+Foundry is used for deploying Solidity contracts and interacting with the blockchain. Install Foundry and initialize it:
+
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+Verify that both forge and cast are installed correctly:
+```bash
+forge --version
+cast --version
+```
+#### 3. Install Stylus
+Stylus is required for deploying Rust contracts. Install it via Cargo:
+```bash
+cargo install stylus
+```
+#### 4. Private Key Setup
+You will need a private key to interact with the blockchain. You can replace the <PRIVATE_KEY> placeholder in the scripts.
+
+#### 5. Network Configuration
+By default, the contracts are deployed on the Sepolia Arbitrum Rollup network. You can modify the RPC URL in the test scripts to deploy the contracts on a different network if needed.
+
+### Running Tests
+
+Navigate to the contract folder:
+```bash
+cd <contract-folder>
+```
+Run the test script:
+```bash
+./test.sh
+```
