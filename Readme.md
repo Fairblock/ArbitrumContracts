@@ -64,14 +64,15 @@ Before running the tests, ensure that the following dependencies and tools are i
 
 #### 1. Install Rust Nightly Toolchain
 
-The Rust test script uses a specific nightly version of Rust. Install and configure it by running:
+The test scripts use a specific nightly version of Rust. Install and configure Rust by running:
 
 ```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup install nightly-2024-05-20
 rustup override set nightly-2024-05-20
 ```
 
-You also need to install the WebAssembly target:
+You also need to install the following target:
 ```bash
 rustup target add wasm32-unknown-unknown
 ```
