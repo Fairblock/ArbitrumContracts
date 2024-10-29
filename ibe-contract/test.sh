@@ -22,7 +22,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE contract...${NC}"
-outputIbe=$(cargo +nightly-2024-05-20-x86_64-unknown-linux-gnu stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm 2>/dev/null)
+outputIbe=$(cargo +nightly-2024-05-20 stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE contract deployed successfully.${NC}"

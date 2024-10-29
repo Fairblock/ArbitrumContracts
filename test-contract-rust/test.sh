@@ -22,7 +22,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the test contract...${NC}"
-outputTest=$(cargo +nightly-2024-05-20-x86_64-unknown-linux-gnu stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/custom.wasm)
+outputTest=$(cargo +nightly-2024-05-20 stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/custom.wasm)
 echo $outputTest
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Test contract deployed successfully.${NC}"
