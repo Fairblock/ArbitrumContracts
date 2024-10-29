@@ -37,9 +37,9 @@ echo -e "${YELLOW}Calling contract to check messages...${NC}"
 result=$(cast call --rpc-url $RPC_URL --private-key $PRIVATE_KEY $Contract "checkMessages(string)(uint8[][])" "test")
 
 
-ascii_values=$(echo "$result" | grep -oP '\d+')
+ascii_values=$(echo "$result" | grep -oE '[0-9]+')
 
-echo -e "${YELLOW}Decoded message from contract:${NC}"
+printf "${YELLOW}Decoded message from contract:${NC}\n"
 for i in $ascii_values; do
   printf "\\$(printf '%03o' "$i")"
 done
