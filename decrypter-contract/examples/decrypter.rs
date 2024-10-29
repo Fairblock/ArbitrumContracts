@@ -73,7 +73,7 @@ async fn main() -> eyre::Result<()> {
         182, 208, 106, 20, 154, 236, 61, 92, 86, 122, 253, 31, 5, 161, 65, 125, 200,
     ];
     let decrypter = Decrypter::new(address, client);
-    let binding = decrypter.decrypt(c, sk).gas_price(100000000).gas(29000000);
+    let binding = decrypter.decrypt(c, sk);
 
     let out = binding.call().await?;
     let result = String::from_utf8(out).unwrap();

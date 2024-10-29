@@ -59,9 +59,7 @@ async fn main() -> eyre::Result<()> {
     ];
     let mac_contract = MacChacha20::new(address, client);
     let binding = mac_contract
-        .headermac(key, body)
-        .gas_price(100000000)
-        .gas(29000000);
+        .headermac(key, body);
 
     let out = binding.call().await?;
     println!("output mac: {:?} - expected mac: {:?}", out, mac);

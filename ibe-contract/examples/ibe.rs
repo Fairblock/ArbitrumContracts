@@ -97,9 +97,7 @@ async fn main() -> eyre::Result<()> {
 
     let ibe = IBE::new(address, client);
     let binding = ibe
-        .decrypt(pair.to_bytes().to_vec(), cv, cw, cu)
-        .gas_price(100000000)
-        .gas(29000000);
+        .decrypt(pair.to_bytes().to_vec(), cv, cw, cu);
     let out = binding.call().await?;
     assert_eq!(out, msg);
     println!("output: {:?} - msg : {:?}", out, msg);
