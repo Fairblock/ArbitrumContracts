@@ -8,10 +8,10 @@ interface IDecrypter {
 /**
  * @title Simple Sealed Bid Auction App Example
  * @notice Example Auction App showcasing Solidity and Arbitrum Stylus Integrations with Fairblock Technologies. 
- * @dev Functions as a sealed-bid auction where bids are submitted encrypted 
- * and revealed using a decryption key once a certain time is passed, triggering the end of the auction. The auctionOwner gets the bid amount; this is assuming that the auction is tied to some offchain deliverable (Art auction etc.).
+ * @dev Functions as a sealed-bid auction where bids are submitted encrypted and revealed using a decryption key once a certain time is passed, triggering the end of the auction. The auctionOwner gets the bid amount; this is assuming that the auction is tied to some offchain deliverable (Art auction etc.).
+ * @dev TODO: actual transference of funds are commented out while example is troubleshot
  */
-contract EncryptedAuction {
+contract ConfidentialAuctionExample {
 
     /// @notice Represents a bid entry in the auction
     struct BidEntry {
@@ -83,13 +83,14 @@ contract EncryptedAuction {
     /**
      * @notice Submits an encrypted bid along with the required fee.
      * @param encryptedBid The encrypted bid value in `uint8[]` format
+     * @dev TODO: this function would be called by different addresses, likely as per a tx flow where, within the same tx, a series of functions would be called where: 1. Bid made, 2. Bid encrypted, 3. Bid submitted here. For test purposes, we keep the bidder to the one test address. 
      */
     function submitEncryptedBid(uint8[] calldata encryptedBid) 
         external 
         payable 
     {
-        require(block.timestamp < bidCondition, "Auction deadline passed");
-        require(msg.value >= auctionFee, "Insufficient fee");
+        require(block.timestamp > bidCondition, "Auction deadline passed");
+        // require(msg.value >= auctionFee, "Insufficient fee");
 
         bids.push(BidEntry({
             bidder: msg.sender,
@@ -130,7 +131,7 @@ contract EncryptedAuction {
         highestBidder = highestBidderLocal;
         auctionFinalized = true;
 
-        payable(auctionOwner).transfer(highestBid);
+        // payable(auctionOwner).transfer(highestBid);
 
         emit AuctionFinalized(highestBidder, highestBid);
     }
@@ -144,7 +145,7 @@ contract EncryptedAuction {
         for (uint256 i = 0; i < bids.length; i++) {
             if (bids[i].bidder != highestBidder) {
                 uint256 refundAmount = bids[i].bidValue - auctionFee;
-                payable(bids[i].bidder).transfer(refundAmount);
+                // payable(bids[i].bidder).transfer(refundAmount);
                 emit RefundIssued(bids[i].bidder, refundAmount);
             }
         }
