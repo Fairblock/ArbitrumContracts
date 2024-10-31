@@ -10,8 +10,8 @@ echo -e "${BLUE}Starting deployment and interaction script for ConfidentialAucti
 
 # Set up configuration variables
 echo -e "${YELLOW}Setting up configuration...${NC}"
-# RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" // actual deployment to Sepolia when done rapid testing
-RPC_URL="http://127.0.0.1:8545"  # Local Anvil instance with Sepolia fork
+RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" # actual deployment to Sepolia when done rapid testing
+# RPC_URL="http://127.0.0.1:8545"  # Local Anvil instance with Sepolia fork
 PRIVATE_KEY=<PRIVATE_KEY>
 DECRYPTER=0xcb5aadb5bf01d6b685219e98d7c5713b7ac73042 # Same decrypter address from Rust script
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
@@ -36,10 +36,12 @@ echo -e "${GREEN}Encrypted bid submitted!${NC}"
 
 echo -e "${YELLOW}Current block number: ${CURRENT_BLOCK}${NC}"
 
-# Manually mine two blocks to ensure the deadline is passed
-echo -e "${YELLOW}Advancing the blockchain by 5 blocks...${NC}"
-cast rpc anvil_mine 5 --rpc-url $RPC_URL
-echo -e "${GREEN}Advanced by 5 blocks.${NC}"
+# # When operating Anvil fork, manually mine two blocks to ensure the deadline is passed
+# echo -e "${YELLOW}Advancing the blockchain by 5 blocks...${NC}"
+# cast rpc anvil_mine 5 --rpc-url $RPC_URL
+# echo -e "${GREEN}Advanced by 5 blocks.${NC}"
+
+sleep 32 #wait at least 2 blocks
 
 NEW_BLOCK=$(cast block-number --rpc-url $RPC_URL)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"

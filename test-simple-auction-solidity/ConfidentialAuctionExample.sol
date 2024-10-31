@@ -152,40 +152,6 @@ contract ConfidentialAuctionExample {
     }
 
     /**
-     * @dev Utility function to convert a `bytes` array to a `uint8[]` array.
-     * @param input The input `bytes` array
-     * @return output The resulting `uint8[]` array
-     */
-    function bytesToUint8Array(bytes memory input) 
-        internal 
-        pure 
-        returns (uint8[] memory) 
-    {
-        uint8[] memory output = new uint8[](input.length);
-        for (uint256 i = 0; i < input.length; i++) {
-            output[i] = uint8(input[i]);
-        }
-        return output;
-    }
-
-    /**
-     * @dev Utility function to convert a `bytes` array to a `uint256`.
-     * @param input The input `bytes` array
-     * @return value The resulting `uint256` value
-     */
-    function bytesToUint(bytes memory input) 
-        internal 
-        pure 
-        returns (uint256) 
-    {
-        uint256 value;
-        for (uint256 i = 0; i < input.length; i++) {
-            value = value * 256 + uint8(input[i]);
-        }
-        return value;
-    }
-
-    /**
      * @dev Utility function to convert a `uint8[]` array to a `uint256`.
      * @param arr The input `uint8[]` array
      * @return result The resulting `uint256` value
