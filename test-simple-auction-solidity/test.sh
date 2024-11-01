@@ -6,12 +6,11 @@ GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 NC="\033[0m"
 
-echo -e "${BLUE}Starting deployment and interaction script for ConfidentialAuctionExample Solidity contract...${NC}"
+echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionExample Solidity contract...${NC}"
 
 # Set up configuration variables
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" # actual deployment to Sepolia when done rapid testing
-# RPC_URL="http://127.0.0.1:8545"  # Local Anvil instance with Sepolia fork
 PRIVATE_KEY=<PRIVATE_KEY>
 DECRYPTER=0xcb5aadb5bf01d6b685219e98d7c5713b7ac73042 # Same decrypter address from Rust script
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
@@ -21,8 +20,8 @@ CURRENT_BLOCK=$(cast block-number --rpc-url $RPC_URL)
 DEADLINE_BLOCK=$((CURRENT_BLOCK + 2))
 
 # Deploy the Solidity contract
-echo -e "${YELLOW}Deploying ConfidentialAuctionExample contract...${NC}"
-OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY test-simple-auction-solidity/ConfidentialAuctionExample.sol:ConfidentialAuctionExample --constructor-args $DECRYPTER $DEADLINE_BLOCK $FEE 2>/dev/null)
+echo -e "${YELLOW}Deploying SealedBidAuctionExample contract...${NC}"
+OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY test-simple-auction-solidity/SealedBidAuctionExample.sol:SealedBidAuctionExample --constructor-args $DECRYPTER $DEADLINE_BLOCK $FEE 2>/dev/null)
 CONTRACT_ADDRESS=$(echo "$OUTPUT" | grep "Deployed to:" | awk '{print $3}')
 echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 
@@ -35,11 +34,6 @@ cast send --rpc-url $RPC_URL --private-key $PRIVATE_KEY $CONTRACT_ADDRESS "submi
 echo -e "${GREEN}Encrypted bid submitted!${NC}"
 
 echo -e "${YELLOW}Current block number: ${CURRENT_BLOCK}${NC}"
-
-# # When operating Anvil fork, manually mine two blocks to ensure the deadline is passed
-# echo -e "${YELLOW}Advancing the blockchain by 5 blocks...${NC}"
-# cast rpc anvil_mine 5 --rpc-url $RPC_URL
-# echo -e "${GREEN}Advanced by 5 blocks.${NC}"
 
 sleep 32 #wait at least 2 blocks
 
@@ -58,7 +52,7 @@ sleep 5
 echo -e "${YELLOW}Checking auction status...${NC}"
 HIGHEST_BID=$(cast call --rpc-url $RPC_URL --private-key $PRIVATE_KEY $CONTRACT_ADDRESS "highestBid()")
 WINNER=$(cast call --rpc-url $RPC_URL --private-key $PRIVATE_KEY $CONTRACT_ADDRESS "highestBidder()")
-echo -e "${GREEN}Highest bid: ${HIGHEST_BID} by: ${WINNER}${NC}"
+echo -e "${GREEN}highestBid()(uint256): ${HIGHEST_BID} and highetBidder()(address): ${WINNER}${NC}"
 
 # Issue refunds if there are non-winning bids
 echo -e "${YELLOW}Issuing refunds to non-winning bidders...${NC}"
