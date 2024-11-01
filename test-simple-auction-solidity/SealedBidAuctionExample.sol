@@ -11,7 +11,7 @@ interface IDecrypter {
  * @dev Functions as a sealed-bid auction where bids are submitted encrypted and revealed using a decryption key once a certain time is passed, triggering the end of the auction. The auctionOwner gets the bid amount; this is assuming that the auction is tied to some offchain deliverable (Art auction etc.).
  * @dev TODO: actual transference of funds are commented out while example is troubleshot
  */
-contract ConfidentialAuctionExample {
+contract SealedBidAuctionExample {
 
     /// @notice Represents a bid entry in the auction
     struct BidEntry {
@@ -105,6 +105,7 @@ contract ConfidentialAuctionExample {
     /**
      * @notice Reveals all bids using the provided decryption key and determines the winner.
      * @param decryptionKey The decryption key to unlock the encrypted bids
+     * @dev TODO: edit helper `uint8ArrayToUint256` such that it can work with a salt being part of the decrypted message. AKA - (bid, salt) --> we need it to get the bid from the decrypted message; this would mean working with say 4 uint8 elements at the end of each encrypted message such that those 4 uint8 elements were the salt. EX.) uint8[] bid_salt = [1, 2, 3, 4, 0, 0, 0, 0] ; where the first 4 elements are the bids.
      */
     function revealBids(uint8[] calldata decryptionKey) external {
         require(block.timestamp >= bidCondition, "Auction still ongoing");
@@ -117,7 +118,7 @@ contract ConfidentialAuctionExample {
             uint8[] memory out = decrypterContract.decrypt(
                 bids[i].encryptedBid,
                 decryptionKey
-            );
+            ); // TODO: as a user, I can blindly copy someone else's bid by copying the c.
             bids[i].isDecrypted = true;
             uint256 bidValue = uint8ArrayToUint256(out);
             if (bidValue > highestBidLocal) {
