@@ -6,8 +6,10 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+source "../.env"
+
 # Private key
-sk=<PRIVATE_KEY>
+# sk=<PRIVATE_KEY>
 # RPC url
 rpc_url=https://sepolia-rollup.arbitrum.io/rpc
 
@@ -24,7 +26,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the test contract...${NC}"
-outputTest=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/custom.wasm)
+outputTest=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/custom.wasm)
 echo $outputTest
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Test contract deployed successfully.${NC}"
@@ -44,7 +46,7 @@ echo -e "${GREEN}Test contract address: $addressTest${NC}"
 
 # Run the Test example
 echo -e "${YELLOW}Running Test example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example test "$addressTest" "$sk"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example test "$addressTest" "$PRIVATE_KEY"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Test example ran successfully.${NC}"

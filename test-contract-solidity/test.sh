@@ -10,12 +10,14 @@ NC="\033[0m" # No Color
 # Define bold text
 BOLD="\033[1m"
 
+source "../.env"
+
 echo -e "${BLUE}Starting the deployment and interaction script...${NC}"
 
 
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc"
-PRIVATE_KEY=<PRIVATE_KEY>
+# PRIVATE_KEY=<PRIVATE_KEY>
 DECRYPTER=0x175243d50f99d494a9e8349529ca240e7c7e8586
 
 

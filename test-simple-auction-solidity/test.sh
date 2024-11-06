@@ -6,12 +6,14 @@ GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 NC="\033[0m"
 
+source "../.env"
+
 echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionExample Solidity contract...${NC}"
 
 # Set up configuration variables
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" # actual deployment to Sepolia when done rapid testing
-PRIVATE_KEY=<PRIVATE_KEY>
+# PRIVATE_KEY=<PRIVATE_KEY>
 DECRYPTER=0x6a694d11c59cfc70967eaa47e9f2cd163ac2ae1f # Same decrypter address from Rust script
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
 
@@ -32,7 +34,7 @@ echo -e "${YELLOW}Submitting encrypted bid...${NC}"
 
 cd encrypter
 bid_value=100
-pk=84dbb7681181e69db71a99e9427344a4478a8b2911f3c6ef36a1891b2e6b4fcfee5c6942ca42502eafe6fc7ec782f60d
+# pk=84dbb7681181e69db71a99e9427344a4478a8b2911f3c6ef36a1891b2e6b4fcfee5c6942ca42502eafe6fc7ec782f60d
 Encrypted=$(./encrypter "Random_IBE_ID" $pk $bid_value)
 cd ..
 BID_DATA=$(python3 convert_to_array.py $Encrypted)
