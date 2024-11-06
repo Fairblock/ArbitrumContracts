@@ -56,7 +56,7 @@ By default, all contracts will be deployed on the Arbitrum testnet. However, the
 
 #### Addresses and Private Key Setup
 
-Addresses for the deployed contracts are hardcoded in the decrypter contract and ibe contract. You can modify these addresses by replacing them with newly deployed contract addresses if necessary. Ensure that you have a private key (`sk`) set to an account on the Arbitrum testnet (if testing on the testnet) that has enough funds to cover gas fees for deploying and interacting with the contracts.
+Addresses for the deployed contracts should be initialized in the decrypter contract and ibe contract. You can do this by calling the `initialize()` functions. Note that these addresses can only be set once. Ensure that you have a private key (`sk`) set to an account on the Arbitrum testnet (if testing on the testnet) that has enough funds to cover gas fees for deploying and interacting with the contracts.
 
 ### Installation Requirements
 

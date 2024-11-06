@@ -3,7 +3,6 @@ extern crate alloc;
 
 use base64::{engine::general_purpose, Engine};
 use ic_bls12_381::{pairing, G1Affine, G2Affine};
-use serde::Deserialize;
 use std::io::Read;
 use std::io::{self, BufRead, BufReader};
 use std::{io::Cursor, str::FromStr};
@@ -11,6 +10,7 @@ use stylus_sdk::alloy_primitives::Address;
 use stylus_sdk::alloy_sol_types;
 use stylus_sdk::call::Call;
 use stylus_sdk::prelude::public;
+use stylus_sdk::storage::{StorageAddress, StorageBool};
 use stylus_sdk::{
     prelude::{sol_interface, sol_storage},
     stylus_proc::entrypoint,
@@ -25,17 +25,11 @@ const KYBER_POINT_LEN: usize = 48;
 const CIPHER_V_LEN: usize = 32;
 const CIPHER_W_LEN: usize = 32;
 
-pub struct Ciphertext {
-    pub u: G1Affine,
-    pub v: Vec<u8>,
-    pub w: Vec<u8>,
-}
-
 struct Header {
     recipients: Vec<Box<Stanza>>,
     mac: Vec<u8>,
 }
-#[derive(Clone, Deserialize)]
+#[derive(Clone)]
 struct Stanza {
     type_: String,
     args: Vec<String>,
@@ -44,9 +38,11 @@ struct Stanza {
 
 sol_storage! {
     #[entrypoint]
-    #[derive( Clone,Copy)]
     pub struct Decrypter {
-
+     StorageAddress ibe_contract_addr;
+     StorageAddress mac_contract_addr;
+     StorageAddress chacha20_decrypter_contract_addr;
+     StorageBool initialized;
     }
 }
 sol_interface! {
@@ -61,9 +57,10 @@ sol_interface! {
     }
 }
 
-
 /// Performs the decryption.
-///
+/// The initialize() function can be called once to set the address of the three helper contracts
+/// 
+/// decrypt() function:
 /// # Parameters
 ///
 /// - `c`: A `Vec<u8>` representing the ciphertext to be decrypted.
@@ -75,8 +72,45 @@ sol_interface! {
 /// - `Err(stylus_sdk::call::Error)`: If an error occurs during decryption, it returns an error from the `stylus_sdk::call::Error` type.
 #[public]
 impl Decrypter {
+    pub fn initialize(
+        &mut self,
+        ibe_contract_addr: String,
+        mac_contract_addr: String,
+        chacha20_decrypter_contract_addr: String,
+    ) -> Result<(), stylus_sdk::call::Error> {
+        let initialized = self.initialized.get();
+        if initialized {
+            return Err(stylus_sdk::call::Error::Revert(
+                "Already initialized".as_bytes().to_vec(),
+            ));
+        }
+        self.ibe_contract_addr
+            .set(Address::from_str(&ibe_contract_addr).map_err(|_| {
+                return stylus_sdk::call::Error::Revert(
+                    "Invalid ibe_contract address".as_bytes().to_vec(),
+                );
+            })?);
+        self.mac_contract_addr
+            .set(Address::from_str(&mac_contract_addr).map_err(|_| {
+                return stylus_sdk::call::Error::Revert(
+                    "Invalid mac_contract address".as_bytes().to_vec(),
+                );
+            })?);
+        self.chacha20_decrypter_contract_addr.set(
+            Address::from_str(&chacha20_decrypter_contract_addr).map_err(|_| {
+                return stylus_sdk::call::Error::Revert(
+                    "Invalid chacha20_decrypter_contract address"
+                        .as_bytes()
+                        .to_vec(),
+                );
+            })?,
+        );
+        self.initialized.set(true);
+        return Ok(());
+    }
+
     pub fn decrypt(
-        &self,
+        &mut self,
         c: Vec<u8>,
         skbytes: Vec<u8>,
     ) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error> {
@@ -95,29 +129,12 @@ impl Decrypter {
 
         let mut cursor = Cursor::new(c);
 
-        let ibe_contract = Address::from_str("0x2dbbd6e1f0664af57bb41dcc920cc58f84153760")
-            .map_err(|_| {
-                return stylus_sdk::call::Error::Revert("Invalid ibe_contract address".as_bytes().to_vec())
-            })?;
-
-        let decrypter_contract = Address::from_str("0x2ad22b866c08425bcb5a6b711212d2ba157a5df4")
-            .map_err(|_| {
-               return stylus_sdk::call::Error::Revert(
-                    "Invalid decrypter_contract address".as_bytes().to_vec(),
-                )
-            })?;
-
-        let mac_contract = Address::from_str("0x0f98156b1ebabd5035c6763db79a10d9bc3096fe")
-            .map_err(|_| {
-               return stylus_sdk::call::Error::Revert("Invalid mac_contract address".as_bytes().to_vec())
-            })?;
-
         let decrypted = decrypter(
             &sk,
             &mut cursor,
-            ibe_contract,
-            decrypter_contract,
-            mac_contract,
+            *self.ibe_contract_addr,
+            *self.chacha20_decrypter_contract_addr,
+            *self.mac_contract_addr,
         );
 
         decrypted
@@ -128,13 +145,13 @@ pub fn decrypter<'a>(
     sk: &G2Affine,
     src: &'a mut dyn Read,
     ibe_contract_addr: Address,
-    decrypter_contract_addr: Address,
+    chacha20_decrypter_contract: Address,
     mac_contract_addr: Address,
 ) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error> {
     let (hdr, mut payload) = parse(src).unwrap();
 
     let file_key = unwrap(sk, &[*hdr.recipients[0].clone()], ibe_contract_addr)?;
- 
+
     let mac_contract = IMacChacha20 {
         address: mac_contract_addr,
     };
@@ -153,21 +170,21 @@ pub fn decrypter<'a>(
     }
     let mut nonce = vec![0u8; 16];
 
-    let _ = payload
-        .read_exact(&mut nonce)
-        .map_err(|_| stylus_sdk::call::Error::Revert("Payload reading error".as_bytes().to_vec()))?;
+    let _ = payload.read_exact(&mut nonce).map_err(|_| {
+        stylus_sdk::call::Error::Revert("Payload reading error".as_bytes().to_vec())
+    })?;
 
     let mut ciphertext: Vec<u8> = vec![];
     let output = payload.read_to_end(&mut ciphertext);
-    if output.is_err(){
+    if output.is_err() {
         return Err(stylus_sdk::call::Error::Revert(
             "Payload reading error".as_bytes().to_vec(),
         ));
     }
-    let decrypter_contract = IDecrypterChacha20 {
-        address: decrypter_contract_addr,
+    let chacha20_decrypter = IDecrypterChacha20 {
+        address: chacha20_decrypter_contract,
     };
-    let msg = decrypter_contract
+    let msg = chacha20_decrypter
         .decrypter(Call::new(), file_key.clone(), nonce, ciphertext)
         .map_err(|_| {
             stylus_sdk::call::Error::Revert(
@@ -178,50 +195,37 @@ pub fn decrypter<'a>(
     msg
 }
 
-fn unwrap(sk: &G2Affine, stanzas: &[Stanza], ibe_contract: Address) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error> {
+fn unwrap(
+    sk: &G2Affine,
+    stanzas: &[Stanza],
+    ibe_contract: Address,
+) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error> {
     let exp_len = KYBER_POINT_LEN + CIPHER_V_LEN + CIPHER_W_LEN;
     if stanzas.len() != 1 && stanzas[0].body.len() != exp_len {
         return Err(stylus_sdk::call::Error::Revert(
-            "Wrong length".as_bytes().to_vec()
+            "Wrong length".as_bytes().to_vec(),
         ));
     }
-    let ciphertext = bytes_to_ciphertext(&stanzas[0].body);
-    unlock(sk, &ciphertext, ibe_contract)
-}
-
-fn unlock(signature: &G2Affine, ciphertext: &Ciphertext, ibe_contract_addr: Address) -> core::result::Result<Vec<u8>, stylus_sdk::call::Error>{
-    let r_gid = pairing(&ciphertext.u, signature);
-
-    let ibe_contract = IIBE {
-        address: ibe_contract_addr,
-    };
-    let data = ibe_contract
-        .decrypt(
-            Call::new(),
-            r_gid.to_bytes().to_vec(),
-            ciphertext.v.clone(),
-            ciphertext.w.clone(),
-            ciphertext.u.to_compressed().to_vec(),
-        );
-
-    data
-}
-
-fn bytes_to_ciphertext(b: &[u8]) -> Ciphertext {
-
-    let kyber_point = &b[0..KYBER_POINT_LEN];
-    let cipher_v = &b[KYBER_POINT_LEN..KYBER_POINT_LEN + CIPHER_V_LEN];
-    let cipher_w = &b[KYBER_POINT_LEN + CIPHER_V_LEN..];
+    let kyber_point = &stanzas[0].body[0..KYBER_POINT_LEN];
+    let cipher_v = &stanzas[0].body[KYBER_POINT_LEN..KYBER_POINT_LEN + CIPHER_V_LEN];
+    let cipher_w = &stanzas[0].body[KYBER_POINT_LEN + CIPHER_V_LEN..];
 
     let u: G1Affine = G1Affine::from_compressed(kyber_point.try_into().unwrap()).unwrap();
 
-    let ct = Ciphertext {
-        u,
-        v: cipher_v.to_vec(),
-        w: cipher_w.to_vec(),
-    };
+    let r_gid = pairing(&u, sk);
 
-    ct
+    let ibe_contract = IIBE {
+        address: ibe_contract,
+    };
+    let data = ibe_contract.decrypt(
+        Call::new(),
+        r_gid.to_bytes().to_vec(),
+        cipher_v.to_vec().clone(),
+        cipher_w.to_vec().clone(),
+        u.to_compressed().to_vec(),
+    );
+
+    data
 }
 
 fn split_args(line: &[u8]) -> (String, Vec<String>) {
@@ -243,7 +247,6 @@ fn decode_string(s: &str) -> Vec<u8> {
     }
     return decoded.unwrap();
 }
-
 
 fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)> {
     let mut rr = BufReader::new(input);
@@ -307,4 +310,3 @@ fn parse<'a, R: Read + 'a>(input: R) -> io::Result<(Header, Box<dyn Read + 'a>)>
 
     Ok((h, payload))
 }
-

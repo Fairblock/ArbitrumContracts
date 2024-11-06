@@ -8,6 +8,10 @@ NC='\033[0m' # No Color
 
 # Private key
 sk=<PRIVATE_KEY>
+# RPC url
+rpc_url=https://sepolia-rollup.arbitrum.io/rpc
+# Ibe hasher contract address
+Hasher=0xdc9dc442a98878d3f4f3cc26b13fb855695565c2
 
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
@@ -22,7 +26,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE contract...${NC}"
-outputIbe=$(cargo +nightly-2024-05-20 stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm 2>/dev/null)
+outputIbe=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE contract deployed successfully.${NC}"
@@ -39,6 +43,17 @@ if [ -z "$addressIbe" ]; then
 fi
 
 echo -e "${GREEN}IBE contract address: $addressIbe${NC}"
+
+# Initialize the ibe contract with the ibe hasher contract address
+echo -e "${YELLOW}Initializing the IBE contract...${NC}"
+initialize_output=$(cast send $addressIbe "initialize(string)" $Hasher --rpc-url $rpc_url --private-key $sk 2>&1)
+
+if [[ $? -ne 0 ]] || [[ $initialize_output == *"revert"* ]]; then
+    echo -e "${RED}Initialization failed or reverted.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Initialization completed successfully.${NC}"
 
 # Run the IBE example
 echo -e "${YELLOW}Running IBE example with the contract address...${NC}"

@@ -8,6 +8,8 @@ NC='\033[0m' # No Color
 
 # Private key
 sk=<PRIVATE_KEY>
+# RPC url
+rpc_url=https://sepolia-rollup.arbitrum.io/rpc
 
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
@@ -22,7 +24,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE hashing contract...${NC}"
-outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e https://sepolia-rollup.arbitrum.io/rpc --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
+outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE hashing contract deployed successfully.${NC}"

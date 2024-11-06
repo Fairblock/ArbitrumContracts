@@ -157,14 +157,12 @@ contract SealedBidAuctionExample {
      * @param arr The input `uint8[]` array
      * @return result The resulting `uint256` value
      */
-    function uint8ArrayToUint256(uint8[] memory arr) internal pure returns (uint256) {
-        require(arr.length <= 32, "Array too large to convert to uint256");
-        uint256 result = 0;
-
-        for (uint256 i = 0; i < arr.length; i++) {
-            result |= uint256(arr[i]) << (8 * (arr.length - 1 - i));
+   function uint8ArrayToUint256(uint8[] memory arr) public pure returns (uint) {
+        uint result = 0;
+        for (uint i = 0; i < arr.length; i++) {
+            require(arr[i] >= 48 && arr[i] <= 57, "Array contains non-numeric characters");
+            result = result * 10 + (arr[i] - 48);
         }
-
         return result;
     }
 }

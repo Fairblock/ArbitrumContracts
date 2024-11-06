@@ -2,17 +2,15 @@
 #![no_std]
 extern crate alloc;
 
-use alloc::vec::Vec;
+use alloc::string::String;
 use alloc::vec;
+use alloc::vec::Vec;
 use core::str::FromStr;
+use sha2::Digest;
 use stylus_sdk::function_selector;
 use stylus_sdk::prelude::sol_interface;
-use stylus_sdk::{
-    alloy_primitives:: Address,
-    alloy_sol_types,
-    call::Call,
-};
-use sha2::Digest;
+use stylus_sdk::storage::{StorageBool, StorageAddress};
+use stylus_sdk::{alloy_primitives::Address, alloy_sol_types, call::Call};
 use stylus_sdk::{
     prelude::sol_storage,
     stylus_proc::{entrypoint, external},
@@ -23,6 +21,8 @@ const BLOCK_SIZE: usize = 32;
 sol_storage! {
     #[entrypoint]
     pub struct IBE {
+     StorageAddress hasher_addr;
+     StorageBool initialized;
     }
 }
 
@@ -34,8 +34,10 @@ sol_interface! {
 }
 
 /// Performs the IBE decryption
-///
-/// # Parameters
+/// The initialize() function can be called once to set the address of the hasher contract
+/// 
+/// decrypt() function: 
+/// # Parameters 
 ///
 /// - `r_gid`: A `Vec<u8>` containing the pairing of cu and decryption key.
 /// - `cv`: A `Vec<u8>` containing the cv part from ciphertext.
@@ -44,24 +46,36 @@ sol_interface! {
 ///
 /// # Returns
 ///
-/// - `Ok(Vec<u8>)`: If successful, returns a `Vec<u8>` containing the plaintext. 
+/// - `Ok(Vec<u8>)`: If successful, returns a `Vec<u8>` containing the plaintext.
 /// - `Err(stylus_sdk::call::Error)`: If an error occurs during decryption, it returns an error from the `stylus_sdk::call::Error` type.
 #[external]
 impl IBE {
+    pub fn initialize(&mut self, hasher_addr: String) -> Result<(), stylus_sdk::call::Error> {
+        let initialized = self.initialized.get();
+        if initialized {
+            return Err(stylus_sdk::call::Error::Revert(
+                "Already initialized".as_bytes().to_vec(),
+            ));
+        }
+        self.hasher_addr.set(Address::from_str(&hasher_addr)
+        .map_err(|_| {
+            stylus_sdk::call::Error::Revert("Invalid hasher address".as_bytes().to_vec())
+        })?);
+        self.initialized.set(true);
+        return Ok(());
+    }
     pub fn decrypt(
-        &self,
+        &mut self,
         r_gid: Vec<u8>,
         cv: Vec<u8>,
         cw: Vec<u8>,
         cu: Vec<u8>,
     ) -> Result<Vec<u8>, stylus_sdk::call::Error> {
         if cu.len() != 48 || cv.len() > BLOCK_SIZE || cw.len() > BLOCK_SIZE {
-            return Err(stylus_sdk::call::Error::Revert("Invalid input length".as_bytes().to_vec()));
+            return Err(stylus_sdk::call::Error::Revert(
+                "Invalid input length".as_bytes().to_vec(),
+            ));
         }
-
-        let hashing_contract_addr: Address =
-            Address::from_str("0xdc9dc442a98878d3f4f3cc26b13fb855695565c2")
-                .map_err(|_| stylus_sdk::call::Error::Revert("Invalid hasher address".as_bytes().to_vec()))?;
 
         let sigma = {
             let mut hash = sha2::Sha256::new();
@@ -83,14 +97,16 @@ impl IBE {
         };
 
         let hasher = IHasher {
-            address: hashing_contract_addr,
+            address: *self.hasher_addr,
         };
         let verify_res = hasher
             .verify(Call::new(), sigma.clone(), msg.clone(), cu)
             .map_err(|_| stylus_sdk::call::Error::Revert("Hasher error".as_bytes().to_vec()))?;
 
         if !verify_res {
-            return Err(stylus_sdk::call::Error::Revert("Verfication failed".as_bytes().to_vec()));
+            return Err(stylus_sdk::call::Error::Revert(
+                "Verfication failed".as_bytes().to_vec(),
+            ));
         }
 
         Ok(msg)
