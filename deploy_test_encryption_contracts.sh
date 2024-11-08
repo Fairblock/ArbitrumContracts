@@ -13,15 +13,10 @@ deploy_helper_contract() {
     local deploy_script=$1
     local unique_marker=$2
     shift 2  # Shift the parameters to handle additional addresses as arguments
-    local output=$(bash "$deploy_script" "$@")  # Pass all additional arguments to the script
 
-    # Print raw output for debugging
-    echo -e "${YELLOW}Raw output from $deploy_script:${NC}"
-    echo "$output"
 
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}Deployment script $deploy_script ran successfully.${NC}"
-    else
+    local output
+    if ! output=$(bash "$deploy_script" "$@" 2>&1); then
         echo -e "${RED}Deployment of $deploy_script failed.${NC}"
         exit 1
     fi
@@ -35,6 +30,8 @@ deploy_helper_contract() {
 
     echo "$contract_address"
 }
+
+
 
 # Variables to store the addresses of deployed contracts
 declare -A contract_addresses
