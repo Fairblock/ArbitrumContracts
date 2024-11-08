@@ -1,13 +1,20 @@
 #!/bin/bash
 
+
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-source "../.env"
+# Get the absolute path of the directory where the script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Change to the script directory (where `Cargo.toml` is located)
+cd "$script_dir"
+
+# Source the .env file using the absolute path
+source "$script_dir/../.env"
 # Private key
 # SECRET_KEY=<PRIVATE_KEY>
 # RPC url

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -8,6 +9,9 @@ NC='\033[0m' # No Color
 
 # Get the absolute path of the directory where the script is located
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script directory (where `Cargo.toml` is located)
+cd "$script_dir"
 
 # Source the .env file using the absolute path
 source "$script_dir/../.env"
@@ -19,7 +23,7 @@ source "$script_dir/../.env"
 
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
-cargo +nightly-2024-05-20 build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=wasm32-unknown-unknown --release > /dev/null 2>&1
+cargo +nightly-2024-05-20 build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=wasm32-unknown-unknown --release 
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Build completed successfully.${NC}"
@@ -30,7 +34,8 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE hashing contract...${NC}"
-outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
+# outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
+outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE hashing contract deployed successfully.${NC}"
