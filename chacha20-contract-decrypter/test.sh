@@ -6,8 +6,10 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+source "../.env"
+
 # Private key
-sk=<PRIVATE_KEY>
+# SECRET_KEY=<PRIVATE_KEY>
 # RPC url
 rpc_url=https://sepolia-rollup.arbitrum.io/rpc
 
@@ -24,7 +26,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the DecrypterChacha20 contract...${NC}"
-outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
+outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -40,11 +42,11 @@ if [ -z "$addressdecrypter" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}DecrypterChacha20 contract address: $addressdecrypter${NC}"
+echo -e "${GREEN}CHACHA20_DECRYPTER_CONTRACT_ADDRESS: $addressdecrypter${NC}"
 
 # Run the example
 echo -e "${YELLOW}Running example with the DecrypterChacha20 contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$sk"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$SECRET_KEY"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}DecrypterChacha20 example ran successfully.${NC}"

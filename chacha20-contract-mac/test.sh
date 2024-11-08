@@ -6,8 +6,10 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+source "../.env"
+
 # Private key
-sk=<PRIVATE_KEY>
+# SECRET_KEY=<PRIVATE_KEY>
 # RPC url
 rpc_url=https://sepolia-rollup.arbitrum.io/rpc
 
@@ -24,7 +26,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the contract...${NC}"
-outputmac=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20mac.wasm 2>/dev/null)
+outputmac=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20mac.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -40,11 +42,11 @@ if [ -z "$addressmac" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}MAC contract address: $addressmac${NC}"
+echo -e "${GREEN}CHACHA20_MAC_CONTRACT_ADDRESS: $addressmac${NC}"
 
 # Run the MAC example
 echo -e "${YELLOW}Running MAC example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example mac "$addressmac" "$sk"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example mac "$addressmac" "$SECRET_KEY"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}MAC example ran successfully.${NC}"

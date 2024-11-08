@@ -15,7 +15,7 @@ echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" # actual deployment to Sepolia when done rapid testing
 # PRIVATE_KEY_1=<PRIVATE_KEY_1>
 # PRIVATE_KEY_2=<PRIVATE_KEY_2>
-DECRYPTER=0xcb5aadb5bf01d6b685219e98d7c5713b7ac73042 # Same decrypter address from Rust script
+# DECRYPTER=0xcb5aadb5bf01d6b685219e98d7c5713b7ac73042 # Same decrypter address from Rust script
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
 
 # BID_1 = <BID_1>
@@ -28,7 +28,7 @@ DEADLINE_BLOCK=$((CURRENT_BLOCK + 2))
 
 # Deploy the Solidity contract
 echo -e "${YELLOW}Deploying SealedBidAuctionExample contract...${NC}"
-OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 test-simple-auction-solidity/SealedBidAuctionExample.sol:SealedBidAuctionExample --constructor-args $DECRYPTER $DEADLINE_BLOCK $FEE 2>/dev/null)
+OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 test-simple-auction-solidity/SealedBidAuctionExample.sol:SealedBidAuctionExample --constructor-args $DEPLOYED_DECRYPTER_ADDRESS $DEADLINE_BLOCK $FEE 2>/dev/null)
 CONTRACT_ADDRESS=$(echo "$OUTPUT" | grep "Deployed to:" | awk '{print $3}')
 echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 

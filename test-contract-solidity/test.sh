@@ -14,13 +14,12 @@ source "../.env"
 
 echo -e "${BLUE}Starting the deployment and interaction script...${NC}"
 
-
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc"
 DECRYPTER=0x175243d50f99d494a9e8349529ca240e7c7e8586
 
 echo -e "${YELLOW}Deploying contract...${NC}"
-OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 test-contract-solidity/Encrypted.sol:MessageStorage --constructor-args $DECRYPTER 2>/dev/null)
+OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 test-contract-solidity/Encrypted.sol:MessageStorage --constructor-args $DEPLOYED_DECRYPTER_ADDRESS 2>/dev/null)
 Contract=$(echo "$OUTPUT" | grep "Deployed to:" | awk '{print $3}')
 echo -e "${GREEN}Deployed contract at address: ${Contract}${NC}"
 sleep 3
