@@ -1,27 +1,25 @@
 #!/bin/bash
 
-
 # Define color codes for formatting
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 NC="\033[0m"
 
-source "../.env"
+# Get the absolute path of the directory where the script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script directory (where `Cargo.toml` is located)
+cd "$script_dir"
+
+# Source the .env file using the absolute path
+source "$script_dir/../.env"
 
 echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionExample Solidity contract...${NC}"
 
 # Set up configuration variables
 echo -e "${YELLOW}Setting up configuration...${NC}"
-RPC_URL="https://sepolia-rollup.arbitrum.io/rpc" # actual deployment to Sepolia when done rapid testing
-# PRIVATE_KEY_1=<PRIVATE_KEY_1>
-# PRIVATE_KEY_2=<PRIVATE_KEY_2>
-# DECRYPTER=0xcb5aadb5bf01d6b685219e98d7c5713b7ac73042 # Same decrypter address from Rust script
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
-
-# BID_1 = <BID_1>
-# BID_2 = <BID_2>
-# TODO: When we use the encryption tool, we ought to use an understandable var(s) for the bid amount. That way we can compare against it within this bash script too, and the students can see that the decryption worked, and that the correct bid won.
 
 # Get the current block number and set the deadline block to 2 blocks later
 CURRENT_BLOCK=$(cast block-number --rpc-url $RPC_URL)
@@ -34,8 +32,6 @@ CONTRACT_ADDRESS=$(echo "$OUTPUT" | grep "Deployed to:" | awk '{print $3}')
 echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 
 sleep 5
-
-# TODO: Use tool to encrypt bid data with a salt value.
 
 # User 1 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"

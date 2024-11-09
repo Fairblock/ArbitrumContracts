@@ -16,11 +16,6 @@ cd "$script_dir"
 # Source the .env file using the absolute path
 source "$script_dir/../.env"
 
-# Private key
-# SECRET_KEY=<PRIVATE_KEY>
-# RPC url
-rpc_url=https://sepolia-rollup.arbitrum.io/rpc
-
 # Build the contract
 echo -e "${YELLOW}Building the DecrypterChacha20 contract...${NC}"
 cargo +nightly-2024-05-20 build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=wasm32-unknown-unknown --release > /dev/null 2>&1

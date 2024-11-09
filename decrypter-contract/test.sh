@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -15,14 +14,7 @@ cd "$script_dir"
 
 # Source the .env file using the absolute path
 source "$script_dir/../.env"
-# Private key
-# SECRET_KEY=<PRIVATE_KEY>
-# RPC url
-rpc_url=https://sepolia-rollup.arbitrum.io/rpc
-# Helper contracts addresses
-# Ibe=0x24f7d1544e572674bb580e084685bc6c649f2c38
-# Mac=0x0f98156b1ebabd5035c6763db79a10d9bc3096fe
-# Chacha20Decrypter=0x2ad22b866c08425bcb5a6b711212d2ba157a5df4
+
 Ibe=$1
 Mac=$2
 Chacha20Decrypter=$3

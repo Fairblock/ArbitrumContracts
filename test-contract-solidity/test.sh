@@ -11,13 +11,19 @@ NC="\033[0m" # No Color
 # Define bold text
 BOLD="\033[1m"
 
-source "../.env"
+# Get the absolute path of the directory where the script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script directory (where `Cargo.toml` is located)
+cd "$script_dir"
+
+# Source the .env file using the absolute path
+source "$script_dir/../.env"
 
 echo -e "${BLUE}Starting the deployment and interaction script...${NC}"
 
 echo -e "${YELLOW}Setting up configuration...${NC}"
 RPC_URL="https://sepolia-rollup.arbitrum.io/rpc"
-DECRYPTER=0x175243d50f99d494a9e8349529ca240e7c7e8586
 
 echo -e "${YELLOW}Deploying contract...${NC}"
 OUTPUT=$(forge create --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 test-contract-solidity/Encrypted.sol:MessageStorage --constructor-args $DEPLOYED_DECRYPTER_ADDRESS 2>/dev/null)
@@ -35,7 +41,6 @@ sleep 10
 
 echo -e "${YELLOW}Calling contract to check messages...${NC}"
 result=$(cast call --rpc-url $RPC_URL --private-key $PRIVATE_KEY_1 $Contract "checkMessages(string)(uint8[][])" "test")
-
 
 ascii_values=$(echo "$result" | grep -oE '[0-9]+')
 

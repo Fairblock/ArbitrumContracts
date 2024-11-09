@@ -31,8 +31,6 @@ deploy_helper_contract() {
     echo "$contract_address"
 }
 
-
-
 # Variables to store the addresses of deployed contracts
 declare -A contract_addresses
 

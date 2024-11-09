@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -15,13 +14,6 @@ cd "$script_dir"
 
 # Source the .env file using the absolute path
 source "$script_dir/../.env"
-
-# # SECRET_KEY
-# SECRET_KEY=<PRIVATE_KEY>
-# RPC url
-rpc_url=https://sepolia-rollup.arbitrum.io/rpc
-# Ibe hashing contract address
-# IBE_HASHING=0xdc9dc442a98878d3f4f3cc26b13fb855695565c2
 
 # Accept the address of IBE_HASHING for initialization
 IBE_HASHING=$1
@@ -61,17 +53,11 @@ echo -e "${GREEN}IBE_CONTRACT_ADDRESS: $addressIbe${NC}"
 echo -e "${YELLOW}Initializing the IBE contract...${NC}"
 initialize_output=$(cast send $addressIbe "initialize(string)" $IBE_HASHING --rpc-url $rpc_url --private-key $SECRET_KEY 2>&1)
 
-# if [[ $? -ne 0 ]] || [[ $initialize_output == *"revert"* ]]; then
-#     echo -e "${RED}Initialization failed or reverted.${NC}"
-#     exit 1
-# fi
-
 if [[ $? -ne 0 ]] || [[ $initialize_output == *"revert"* ]]; then
     echo -e "${RED}Initialization failed or reverted. Output:${NC}"
     echo "$initialize_output"
     exit 1
 fi
-
 
 echo -e "${GREEN}Initialization completed successfully.${NC}"
 

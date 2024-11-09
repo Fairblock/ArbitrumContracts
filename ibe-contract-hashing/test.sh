@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -16,11 +15,6 @@ cd "$script_dir"
 # Source the .env file using the absolute path
 source "$script_dir/../.env"
 
-# Private key
-# SECRET_KEY=<PRIVATE_KEY>
-# RPC url
-# rpc_url=https://sepolia-rollup.arbitrum.io/rpc
-
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
 cargo +nightly-2024-05-20 build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=wasm32-unknown-unknown --release 
@@ -34,8 +28,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE hashing contract...${NC}"
-# outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
-outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm)
+outputIbehashing=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/stylus-bls.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE hashing contract deployed successfully.${NC}"
