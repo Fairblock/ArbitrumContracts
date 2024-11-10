@@ -29,7 +29,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the DecrypterChacha20 contract...${NC}"
-outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
+outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY_1" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -49,7 +49,7 @@ echo -e "${GREEN}CHACHA20_DECRYPTER_CONTRACT_ADDRESS: $addressdecrypter${NC}"
 
 # Run the example
 echo -e "${YELLOW}Running example with the DecrypterChacha20 contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$SECRET_KEY"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$PRIVATE_KEY_1"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}DecrypterChacha20 example ran successfully.${NC}"

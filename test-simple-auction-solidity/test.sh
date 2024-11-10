@@ -13,7 +13,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$script_dir"
 
 # Source the .env file using the absolute path
-source "$script_dir/.env"
+source "$script_dir/../.env"
 
 echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionExample Solidity contract...${NC}"
 
@@ -66,9 +66,20 @@ sleep 32 #wait at least 2 blocks
 NEW_BLOCK=$(cast block-number --rpc-url $rpc_url)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
 
-# Reveal the bid using the secret key from the Rust file
+# # Reveal the bid using the secret key from the Rust file
+# echo -e "${YELLOW}Revealing bid with secret key...${NC}"
+# SECRET_KEY="[180,94,231,64,60,139,63,77,251,219,173,163,74,124,6,10,129,139,151,186,102,134,86,99,150,127,59,169,18,212,67,132,48,180,58,172,181,219,30,166,33,104,186,198,23,29,20,141,15,107,179,56,147,33,220,105,191,20,32,206,3,203,206,179,228,207,247,100,37,47,155,29,212,118,240,159,79,249,88,182,208,106,20,154,236,61,92,86,122,253,31,5,161,65,125,200]"
+# cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "revealBids(uint8[])" "$SECRET_KEY"
+# echo -e "${GREEN}Bid revealed!${NC}"
+
+# # Testing use of the keyshare from ShareGenerator and formatting it in a way that is needed to test with
+# echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $KEYSHARE"
+# SECRET_KEY_NEW=$(python3 convert_to_array.py $KEYSHARE)
+# echo -e "${YELLOW}Formatted Keyshare obtained from convert_to_array: $SECRET_KEY_NEW"
+
+# TODO: THIS IS JUST RAW SECRET KEY ATTEMPTED TO BE NEWLY GENERATED... HASH IS TROUBLESHOOTING THIS. I GOT THIS FROM USING THE SHARE GENERATOR REPO. I THEN USED THE CORRESPONDING PUBLIC KEY IN THE .ENV, BUT SADLY IT IS NOT WORKING RIGHT NOW WITH THESE NEWLY GENERATED KEYS.
 echo -e "${YELLOW}Revealing bid with secret key...${NC}"
-SECRET_KEY="[180,94,231,64,60,139,63,77,251,219,173,163,74,124,6,10,129,139,151,186,102,134,86,99,150,127,59,169,18,212,67,132,48,180,58,172,181,219,30,166,33,104,186,198,23,29,20,141,15,107,179,56,147,33,220,105,191,20,32,206,3,203,206,179,228,207,247,100,37,47,155,29,212,118,240,159,79,249,88,182,208,106,20,154,236,61,92,86,122,253,31,5,161,65,125,200]"
+SECRET_KEY="[135, 137, 141, 215, 238, 12, 175, 195, 47, 158, 244, 88, 147, 223, 107, 229, 251, 165, 200, 42, 230, 51, 50, 61, 106, 124, 87, 78, 71, 71, 104, 152, 188, 163, 92, 228, 213, 83, 182, 182, 179, 27, 248, 232, 243, 40, 249, 71, 15, 206, 136, 194, 50, 255, 229, 27, 206, 63, 144, 184, 39, 213, 10, 187, 252, 177, 220, 46, 255, 94, 58, 233, 238, 119, 137, 237, 254, 132, 89, 63, 245, 110, 36, 171, 30, 170, 88, 97, 238, 197, 25, 245, 235, 74, 74, 138]"
 cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "revealBids(uint8[])" "$SECRET_KEY"
 echo -e "${GREEN}Bid revealed!${NC}"
 
@@ -78,7 +89,7 @@ sleep 5
 echo -e "${YELLOW}Checking auction status...${NC}"
 HIGHEST_BID=$(cast call --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "highestBid()(uint256)")
 WINNER=$(cast call --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "highestBidder()(address)")
-echo -e "${GREEN}highestBid: ${HIGHEST_BID} and highetBidder: ${WINNER}${NC}"
+echo -e "${GREEN}highestBid: ${HIGHEST_BID} and highestBidder: ${WINNER}${NC}"
 
 # Issue refunds if there are non-winning bids
 echo -e "${YELLOW}Issuing refunds to non-winning bidders...${NC}"

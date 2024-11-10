@@ -32,7 +32,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the contract...${NC}"
-outputDecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/decrypter.wasm 2>/dev/null)
+outputDecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY_1" --wasm-file=./target/wasm32-unknown-unknown/release/decrypter.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -52,7 +52,7 @@ echo -e "${GREEN}DECRYPTER_CONTRACT_ADDRESS: $addressDecrypter${NC}"
 
 # Initialize the decrypter contract with the helper contracts addresses
 echo -e "${YELLOW}Initializing the decrypter contract...${NC}"
-initialize_output=$(cast send $addressDecrypter "initialize(string,string,string)" $Ibe $Mac $Chacha20Decrypter --rpc-url $rpc_url --private-key $SECRET_KEY 2>&1)
+initialize_output=$(cast send $addressDecrypter "initialize(string,string,string)" $Ibe $Mac $Chacha20Decrypter --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 2>&1)
 
 if [[ $? -ne 0 ]] || [[ $initialize_output == *"revert"* ]]; then
     echo -e "${RED}Initialization failed or reverted.${NC}"
@@ -63,7 +63,7 @@ echo -e "${GREEN}Initialization completed successfully.${NC}"
 
 # Run the decrypter example
 echo -e "${YELLOW}Running decrypter example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressDecrypter" "$SECRET_KEY" 
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressDecrypter" "$PRIVATE_KEY_1" 
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Decrypter example ran successfully.${NC}"

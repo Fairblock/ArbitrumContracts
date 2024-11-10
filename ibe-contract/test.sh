@@ -31,7 +31,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the IBE contract...${NC}"
-outputIbe=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm)
+outputIbe=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY_1" --wasm-file=./target/wasm32-unknown-unknown/release/ibe.wasm)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE contract deployed successfully.${NC}"
@@ -51,7 +51,7 @@ echo -e "${GREEN}IBE_CONTRACT_ADDRESS: $addressIbe${NC}"
 
 # Initialize the ibe contract with the ibe IBE_HASHING contract address
 echo -e "${YELLOW}Initializing the IBE contract...${NC}"
-initialize_output=$(cast send $addressIbe "initialize(string)" $IBE_HASHING --rpc-url $rpc_url --private-key $SECRET_KEY 2>&1)
+initialize_output=$(cast send $addressIbe "initialize(string)" $IBE_HASHING --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 2>&1)
 
 if [[ $? -ne 0 ]] || [[ $initialize_output == *"revert"* ]]; then
     echo -e "${RED}Initialization failed or reverted. Output:${NC}"
@@ -63,7 +63,7 @@ echo -e "${GREEN}Initialization completed successfully.${NC}"
 
 # Run the IBE example
 echo -e "${YELLOW}Running IBE example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example ibe "$addressIbe" "$SECRET_KEY"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example ibe "$addressIbe" "$PRIVATE_KEY_1"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}IBE example ran successfully.${NC}"

@@ -29,7 +29,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the contract...${NC}"
-outputmac=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$SECRET_KEY" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20mac.wasm 2>/dev/null)
+outputmac=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY_1" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20mac.wasm 2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -49,7 +49,7 @@ echo -e "${GREEN}CHACHA20_MAC_CONTRACT_ADDRESS: $addressmac${NC}"
 
 # Run the MAC example
 echo -e "${YELLOW}Running MAC example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example mac "$addressmac" "$SECRET_KEY"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example mac "$addressmac" "$PRIVATE_KEY_1"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}MAC example ran successfully.${NC}"

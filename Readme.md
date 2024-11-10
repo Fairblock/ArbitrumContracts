@@ -9,6 +9,10 @@ Clone the repo onto your local machine and install the submodules: `git clone --
 
    > NOTE: If you have not installed the submodules, probably because you ran `git clone <repo link>` instead of the CLI command in step 1, you may run into errors when running `forge build` since it is looking for the dependencies for the project. `git submodule update --init --recursive` can be used if you clone the repo without installing the submodules.
 
+The repo `encrypter`, that should be now seen within the `test-simple-auction-solidity` directory, is used to actually encrypt the bid values in accordance to the typical UX flow when interacting with Fairyring v1. The `cyphertext` (encoded tx) is done off-chain and submitted on-chain.
+
+> It is very important to run `cd test-simple-auction-solidity/encrypter` from the root, and then run `go build`. This is needed in order for the encrypter functionality to work.
+
 ### 1. Install Rust Nightly Toolchain
 
 The test scripts use a specific nightly version of Rust. Install and configure Rust by running:
@@ -99,10 +103,6 @@ Let's walk through each one.
 ### TODO: `test-simple-auction-solidity`
 
 This tutorial showcases a couple of different things in addition to a sealed bid auction example.
-
-1. The repo `encrypter` is used to actually encrypt the bid values in accordance to the typical UX flow when interacting with Fairyring v1. The `cyphertext` (encoded tx) is done off-chain and submitted on-chain.
-
-> It is very important to run `cd test-simple-auction-solidity/encrypter` from the root, and then run `go build`. This is needed in order for the encrypter functionality to work.
 
 Now simply run `./test.sh` as you did in the other simple integration test directories.
 

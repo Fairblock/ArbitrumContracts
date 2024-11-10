@@ -49,7 +49,7 @@ echo "IBE_HASHING_CONTRACT_ADDRESS $addressIbehashing"
 
 # Run the hashing example
 echo -e "${YELLOW}Running hashing example with the contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example hashing "$addressIbehashing" "$SECRET_KEY"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example hashing "$addressIbehashing" "$PRIVATE_KEY_1"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Hashing example ran successfully.${NC}"
