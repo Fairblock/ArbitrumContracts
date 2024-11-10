@@ -34,8 +34,10 @@ echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 sleep 5
 
 # Generate shares and extract MasterPublicKey to encrypt the bid data.
-PUBLIC_KEY_NEW=$(../ShareGenerator/ShareGenerator generate 1 1 | jq -r '.MasterPublicKey')
-
+output=$(../ShareGenerator/ShareGenerator generate 1 1 | jq '.')
+KEY_SHARE=$(echo "$output" | jq -r '.Shares[0].Value')
+PUBLIC_KEY_NEW=$(echo "$output" | jq -r '.MasterPublicKey')
+echo -e "key share : ${GREEN}$KEY_SHARE${NC}"
 echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY_NEW"
 
 # User 1 submits a bid using mock bid data from the Rust file
@@ -73,11 +75,11 @@ echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
 
 # Get Keyshare from ShareGenerator submodule
 # Derive key share for block height 100 and extract KeyShare
-KEYSHARE=$(../ShareGenerator/ShareGenerator derive 4e4de78f3823e222c63de342c5aa995b25f794f2b118b9b52c82565792ea14f5 0 100 | jq -r '.KeyShare')
+DECRYPTION_KEY=$(../ShareGenerator/ShareGenerator derive $KEY_SHARE 0 "Random_IBE_ID" | jq -r '.KeyShare')
 
 # Testing use of the keyshare from ShareGenerator and formatting it in a way that is needed to test with
-echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $KEYSHARE"
-SECRET_KEY_NEW=$(python3 convert_to_array.py $KEYSHARE)
+echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $DECRYPTION_KEY"
+SECRET_KEY_NEW=$(python3 convert_to_array.py $DECRYPTION_KEY)
 echo -e "${YELLOW}Formatted Keyshare obtained from convert_to_array: $SECRET_KEY_NEW"
 
 # TODO: THIS NOW USES THE SECRET_KEY_NEW AND PUBLIC KEY GENERATED FROM SHARE GENERATOR REPO. IT IS NOT WORKING THOUGH.
