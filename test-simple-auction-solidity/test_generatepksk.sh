@@ -33,10 +33,10 @@ echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 
 sleep 5
 
-# Master public key needs to be generated to encrypt the bid data.
-PUBLIC_KEY_NEW=$(../sharegenerator) # TODO: not sure if there are any inputs needed
-echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY_NEW"
+# Generate shares and extract MasterPublicKey to encrypt the bid data.
+PUBLIC_KEY_NEW=$(../ShareGenerator/ShareGenerator generate 1 1 | jq -r '.MasterPublicKey')
 
+echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY_NEW"
 
 # User 1 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"
@@ -70,6 +70,10 @@ sleep 32 #wait at least 2 blocks
 
 NEW_BLOCK=$(cast block-number --rpc-url $rpc_url)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
+
+# Get Keyshare from ShareGenerator submodule
+# Derive key share for block height 100 and extract KeyShare
+KEYSHARE=$(../ShareGenerator/ShareGenerator derive 4e4de78f3823e222c63de342c5aa995b25f794f2b118b9b52c82565792ea14f5 0 100 | jq -r '.KeyShare')
 
 # Testing use of the keyshare from ShareGenerator and formatting it in a way that is needed to test with
 echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $KEYSHARE"
