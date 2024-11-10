@@ -9,9 +9,6 @@ NC='\033[0m' # No Color
 
 source "../.env"
 
-# RPC url
-rpc_url=https://sepolia-rollup.arbitrum.io/rpc
-
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
 cargo +nightly-2024-05-20 build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --target=wasm32-unknown-unknown --release

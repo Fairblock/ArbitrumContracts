@@ -1727,6 +1727,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "ibe-contract-hashing"
+version = "0.1.5"
+dependencies = [
+ "ark-bls12-381",
+ "ark-serialize",
+ "ethabi",
+ "ethers",
+ "eyre",
+ "hex",
+ "ic_bls12_381",
+ "num-bigint",
+ "sha2 0.9.9",
+ "stylus-sdk",
+ "tokio",
+ "wasm-bindgen",
+ "wee_alloc",
+]
+
+[[package]]
 name = "ic_bls12_381"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3288,25 +3307,6 @@ dependencies = [
  "quote",
  "rustversion",
  "syn 2.0.76",
-]
-
-[[package]]
-name = "stylus-bls"
-version = "0.1.5"
-dependencies = [
- "ark-bls12-381",
- "ark-serialize",
- "ethabi",
- "ethers",
- "eyre",
- "hex",
- "ic_bls12_381",
- "num-bigint",
- "sha2 0.9.9",
- "stylus-sdk",
- "tokio",
- "wasm-bindgen",
- "wee_alloc",
 ]
 
 [[package]]

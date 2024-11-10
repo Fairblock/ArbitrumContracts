@@ -13,7 +13,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$script_dir"
 
 # Source the .env file using the absolute path
-source "$script_dir/../.env"
+source "$script_dir/.env"
 
 echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionExample Solidity contract...${NC}"
 
@@ -23,7 +23,7 @@ FEE=10  # Set auction fee, very small so example doesn't brick based on wallet b
 
 # Get the current block number and set the deadline block to 2 blocks later
 CURRENT_BLOCK=$(cast block-number --rpc-url $rpc_url)
-DEADLINE_BLOCK=$((CURRENT_BLOCK + 2))
+DEADLINE_BLOCK=$((CURRENT_BLOCK + 10))
 
 # Deploy the Solidity contract
 echo -e "${YELLOW}Deploying SealedBidAuctionExample contract...${NC}"

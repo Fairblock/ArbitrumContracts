@@ -1,5 +1,5 @@
 [package]
-name = "stylus-bls"
+name = "ibe-contract-hashing"
 version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -28,7 +28,7 @@ ethabi={version = "18.0.0", default-features = false}
 export-abi = ["stylus-sdk/export-abi"]
 
 [[bin]]
-name = "stylus-bls"
+name = "ibe-contract-hashing"
 path = "src/lib.rs"
 
 
