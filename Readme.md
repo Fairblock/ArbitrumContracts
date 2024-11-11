@@ -1,4 +1,4 @@
-# Decryption Contracts
+# Implementing Decryption Contracts on Stylus and Unlocking Fairblock v1 Tech Stack
 
 Welcome to the Fairblock <> Arbitrum Stylus Integration Tutorial. This repo will be used for the DevCon 2024 Stylus tutorial featuring Fairblock Technologies.
 
