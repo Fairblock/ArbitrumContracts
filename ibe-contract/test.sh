@@ -17,6 +17,8 @@ source "$script_dir/../.env"
 
 # Accept the address of IBE_HASHING for initialization
 IBE_HASHING=$1
+# IBE_HASHING=0x71dd830e67af9858ba7d1836ddb9c0c3ae06c1e0
+
 
 # Build the contract
 echo -e "${YELLOW}Building the contract...${NC}"
