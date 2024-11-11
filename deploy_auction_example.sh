@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # MODIFY THIS
-address_decrypter=0x99e63278e95b3a04767b6a6e17d94c4eef892304
+address_decrypter=0x042759764562ac39f79ccb3b959140123acc4c60
 
 
 # use ShareGenerator to generate the master public and secret keys 
