@@ -33,6 +33,13 @@ echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 
 sleep 5
 
+# Generate shares and extract MasterPublicKey to encrypt the bid data.
+output=$(../ShareGenerator/ShareGenerator generate 1 1 | jq '.')
+KEY_SHARE=$(echo "$output" | jq -r '.Shares[0].Value')
+PUBLIC_KEY=$(echo "$output" | jq -r '.MasterPublicKey')
+echo -e "key share : ${GREEN}$KEY_SHARE${NC}"
+echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY"
+
 # User 1 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"
 
@@ -66,9 +73,16 @@ sleep 32 #wait at least 2 blocks
 NEW_BLOCK=$(cast block-number --rpc-url $rpc_url)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
 
-# Reveal the bid using the secret key from the Rust file
+# Get DECRYPTION_KEY (keyshare) from ShareGenerator submodule
+DECRYPTION_KEY=$(../ShareGenerator/ShareGenerator derive $KEY_SHARE 0 "Random_IBE_ID" | jq -r '.KeyShare')
+
+# Format DECRYPTION_KEY in a way that is needed to test with, named SECRET_KEY
+echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $DECRYPTION_KEY"
+SECRET_KEY=$(python3 convert_to_array.py $DECRYPTION_KEY)
+echo -e "${YELLOW}Formatted Keyshare: $SECRET_KEY"
+
+# Use SECRET_KEY to decrypt bid results
 echo -e "${YELLOW}Revealing bid with secret key...${NC}"
-SECRET_KEY="[180,94,231,64,60,139,63,77,251,219,173,163,74,124,6,10,129,139,151,186,102,134,86,99,150,127,59,169,18,212,67,132,48,180,58,172,181,219,30,166,33,104,186,198,23,29,20,141,15,107,179,56,147,33,220,105,191,20,32,206,3,203,206,179,228,207,247,100,37,47,155,29,212,118,240,159,79,249,88,182,208,106,20,154,236,61,92,86,122,253,31,5,161,65,125,200]"
 cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "revealBids(uint8[])" "$SECRET_KEY"
 echo -e "${GREEN}Bid revealed!${NC}"
 
