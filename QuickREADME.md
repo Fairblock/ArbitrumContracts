@@ -1,21 +1,15 @@
-Run the command:
+Run the command to set up the project:
 
 ```
 ./Build.sh
 ```
 
-Run the command:
-
-
-
-Update your `.env`
-
-Now, run the next batch of commands to deploy the decryption contracts, and then also run the integration tests for the simple sealed bid auction example.
-
-You can do this simply by running the `StylusTutorial.sh` script.
-
-Run:
+Update your `.env`, if you forget to you can follow prompts that come up in the terminal when running the next command.
 
 ```
 ./StylusTutorial.sh
 ```
+
+The above todes the following:
+- Run the next batch of commands to deploy the decryption contracts, 
+- Also runs the integration tests for the simple sealed bid auction example
