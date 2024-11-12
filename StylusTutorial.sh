@@ -1,7 +1,9 @@
 set -e  # Stop on any error
 
+chmod +x StylusTutorial.sh
+
 # Prompt the user to update their .env file
-echo "Please copy over two PRIVATE_KEYs from Sepolia wallets (they can be new and empty) and add it to the .env file under the 'PRIVATE_KEY_1' and `PRIVATE_KEY_2` variables."
+echo "Please copy over two PRIVATE_KEYs from Sepolia wallets (they can be new and empty) and add it to the .env file under the 'PRIVATE_KEY_1' and 'PRIVATE_KEY_2' variables."
 read -p "Press Enter after updating the .env file..."
 
 # Deploy the decryption contracts
