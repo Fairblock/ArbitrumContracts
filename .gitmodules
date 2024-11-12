@@ -1,5 +1,5 @@
-[submodule "test-simple-auction-solidity/encrypter"]
-	path = test-simple-auction-solidity/encrypter
+[submodule "encrypter"]
+	path = encrypter
 	url = https://github.com/Fairblock/encrypter.git
 [submodule "ShareGenerator"]
 	path = ShareGenerator

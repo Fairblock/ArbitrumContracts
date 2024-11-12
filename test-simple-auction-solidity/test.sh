@@ -43,10 +43,11 @@ echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY"
 # User 1 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"
 
-cd encrypter
+cd ../encrypter
+go build
 bid_value=100
 Encrypted=$(./encrypter "Random_IBE_ID" $PUBLIC_KEY $bid_value)
-cd ..
+cd ../test-simple-auction-solidity
 BID_DATA=$(python3 convert_to_array.py $Encrypted)
 
 cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "submitEncryptedBid(uint8[])" "$BID_DATA" --value $FEE
@@ -57,10 +58,10 @@ echo -e "${YELLOW}Current block number: ${CURRENT_BLOCK}${NC}"
 # User 2 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #2...${NC}"
 
-cd encrypter
+cd ../encrypter
 bid_value=150
 Encrypted=$(./encrypter "Random_IBE_ID" $PUBLIC_KEY $bid_value)
-cd ..
+cd ../test-simple-auction-solidity
 BID_DATA=$(python3 convert_to_array.py $Encrypted)
 
 cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_2 $CONTRACT_ADDRESS "submitEncryptedBid(uint8[])" "$BID_DATA" --value $FEE
