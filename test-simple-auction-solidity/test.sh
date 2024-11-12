@@ -9,7 +9,7 @@ NC="\033[0m"
 # Get the absolute path of the directory where the script is located
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Change to the script directory (where `Cargo.toml` is located)
+# Change to the script directory (where Cargo.toml is located)
 cd "$script_dir"
 
 # Source the .env file using the absolute path
@@ -35,10 +35,10 @@ sleep 5
 
 # Generate shares and extract MasterPublicKey to encrypt the bid data.
 output=$(../ShareGenerator/ShareGenerator generate 1 1 | jq '.')
-KEY_SHARE=$(echo "$output" | jq -r '.Shares[0].Value')
-PUBLIC_KEY=$(echo "$output" | jq -r '.MasterPublicKey')
-echo -e "key share : ${GREEN}$KEY_SHARE${NC}"
-echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $PUBLIC_KEY"
+MASTER_SECRET_KEY_SHARES=$(echo "$output" | jq -r '.Shares[0].Value')
+MASTER_PUBLIC_KEY=$(echo "$output" | jq -r '.MasterPublicKey')
+echo -e "key share : ${GREEN}$MASTER_SECRET_KEY_SHARES${NC}"
+echo -e "${YELLOW}NEW PUBLIC KEY GENERATED: $MASTER_PUBLIC_KEY"
 
 # User 1 submits a bid using mock bid data from the Rust file
 echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"
@@ -46,7 +46,7 @@ echo -e "${YELLOW}Submitting encrypted bid from user #1...${NC}"
 cd ../encrypter
 go build
 bid_value=100
-Encrypted=$(./encrypter "Random_IBE_ID" $PUBLIC_KEY $bid_value)
+Encrypted=$(./encrypter "Random_IBE_ID" $MASTER_PUBLIC_KEY $bid_value)
 cd ../test-simple-auction-solidity
 BID_DATA=$(python3 convert_to_array.py $Encrypted)
 
@@ -60,7 +60,7 @@ echo -e "${YELLOW}Submitting encrypted bid from user #2...${NC}"
 
 cd ../encrypter
 bid_value=150
-Encrypted=$(./encrypter "Random_IBE_ID" $PUBLIC_KEY $bid_value)
+Encrypted=$(./encrypter "Random_IBE_ID" $MASTER_PUBLIC_KEY $bid_value)
 cd ../test-simple-auction-solidity
 BID_DATA=$(python3 convert_to_array.py $Encrypted)
 
@@ -75,7 +75,7 @@ NEW_BLOCK=$(cast block-number --rpc-url $rpc_url)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
 
 # Get DECRYPTION_KEY (keyshare) from ShareGenerator submodule
-DECRYPTION_KEY=$(../ShareGenerator/ShareGenerator derive $KEY_SHARE 0 "Random_IBE_ID" | jq -r '.KeyShare')
+DECRYPTION_KEY=$(../ShareGenerator/ShareGenerator derive $MASTER_SECRET_KEY_SHARES 0 "Random_IBE_ID" | jq -r '.KeyShare')
 
 # Format DECRYPTION_KEY in a way that is needed to test with, named SECRET_KEY
 echo -e "${YELLOW}Keyshare obtained from ShareGenerator: $DECRYPTION_KEY"
