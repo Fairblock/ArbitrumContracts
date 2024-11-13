@@ -47,7 +47,7 @@ With all that, let's jump into the tutorial!
 
 ## Quickstart
 
-1. Make sure you have docker running. If you are new to docker, simply follow the instructions to install Docker Desktop provided on [Docker's website](https://www.docker.com/products/docker-desktop/).
+1. General Setup: Make sure you have docker running. If you are new to docker, simply follow the instructions to install Docker Desktop provided on [Docker's website](https://www.docker.com/products/docker-desktop/). As well, make sure you have `jq` installed too, a lightweight command-line JSON processor. For MacOS and Linux supporting Homebrew, simply run `brew install jq`. On Windows, use an appropriate package manager to install `jq`.
 
 2. Build the project; installing submodules, rust, stylus, foundry.
 
