@@ -1,0 +1,6 @@
+[submodule "encrypter"]
+	path = encrypter
+	url = https://github.com/Fairblock/encrypter.git
+[submodule "ShareGenerator"]
+	path = ShareGenerator
+	url = https://github.com/Fairblock/ShareGenerator

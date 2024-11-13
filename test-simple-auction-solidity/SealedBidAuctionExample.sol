@@ -9,7 +9,8 @@ interface IDecrypter {
  * @title Simple Sealed Bid Auction App Example
  * @notice Example Auction App showcasing Solidity and Arbitrum Stylus Integrations with Fairblock Technologies. 
  * @dev Functions as a sealed-bid auction where bids are submitted encrypted and revealed using a decryption key once a certain time is passed, triggering the end of the auction. The auctionOwner gets the bid amount; this is assuming that the auction is tied to some offchain deliverable (Art auction etc.).
- * @dev TODO: actual transference of funds are commented out while example is troubleshot
+ * @dev This is purly for educational purposes and is not ready for production. Developers must carry out their own due diligence when it comes to deployment of smart contracts in production, including but not limited to, thorough audits, secure design practices, etc.
+ * @dev Actual transference of funds are not enacted within this example, as the main purpose is to showcase the use of encryption and conditional decryption and execution using Fairblock technologies. Decrypted values (bids) can be used with typical smart contract patterns for auction payments.
  */
 contract SealedBidAuctionExample {
 
@@ -83,7 +84,6 @@ contract SealedBidAuctionExample {
     /**
      * @notice Submits an encrypted bid along with the required fee.
      * @param encryptedBid The encrypted bid value in `uint8[]` format
-     * @dev TODO: this function would be called by different addresses, likely as per a tx flow where, within the same tx, a series of functions would be called where: 1. Bid made, 2. Bid encrypted, 3. Bid submitted here. For test purposes, we keep the bidder to the one test address. 
      */
     function submitEncryptedBid(uint8[] calldata encryptedBid) 
         external 
@@ -105,7 +105,6 @@ contract SealedBidAuctionExample {
     /**
      * @notice Reveals all bids using the provided decryption key and determines the winner.
      * @param decryptionKey The decryption key to unlock the encrypted bids
-     * @dev TODO: edit helper `uint8ArrayToUint256` such that it can work with a salt being part of the decrypted message. AKA - (bid, salt) --> we need it to get the bid from the decrypted message; this would mean working with say 4 uint8 elements at the end of each encrypted message such that those 4 uint8 elements were the salt. EX.) uint8[] bid_salt = [1, 2, 3, 4, 0, 0, 0, 0] ; where the first 4 elements are the bids.
      */
     function revealBids(uint8[] calldata decryptionKey) external {
         require(block.timestamp >= bidCondition, "Auction still ongoing");
@@ -118,7 +117,7 @@ contract SealedBidAuctionExample {
             uint8[] memory out = decrypterContract.decrypt(
                 bids[i].encryptedBid,
                 decryptionKey
-            ); // TODO: as a user, I can blindly copy someone else's bid by copying the c.
+            );
             bids[i].isDecrypted = true;
             uint256 bidValue = uint8ArrayToUint256(out);
             if (bidValue > highestBidLocal) {

@@ -1,15 +1,20 @@
 #!/bin/bash
 
+
 # Define colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Private key
-sk=<PRIVATE_KEY>
-# RPC url
-rpc_url=https://sepolia-rollup.arbitrum.io/rpc
+# Get the absolute path of the directory where the script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script directory (where `Cargo.toml` is located)
+cd "$script_dir"
+
+# Source the .env file using the absolute path
+source "$script_dir/../.env"
 
 # Build the contract
 echo -e "${YELLOW}Building the DecrypterChacha20 contract...${NC}"
@@ -24,7 +29,7 @@ fi
 
 # Deploy the contract
 echo -e "${YELLOW}Deploying the DecrypterChacha20 contract...${NC}"
-outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$sk" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
+outputdecrypter=$(cargo +nightly-2024-05-20 stylus deploy -e $rpc_url --private-key="$PRIVATE_KEY_1" --wasm-file=./target/wasm32-unknown-unknown/release/chacha20.wasm  2>/dev/null)
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}Contract deployed successfully.${NC}"
@@ -40,11 +45,11 @@ if [ -z "$addressdecrypter" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}DecrypterChacha20 contract address: $addressdecrypter${NC}"
+echo -e "${GREEN}CHACHA20_DECRYPTER_CONTRACT_ADDRESS: $addressdecrypter${NC}"
 
 # Run the example
 echo -e "${YELLOW}Running example with the DecrypterChacha20 contract address...${NC}"
-RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$sk"
+RUST_BACKTRACE=full cargo +nightly-2024-05-20 run --example decrypter "$addressdecrypter" "$PRIVATE_KEY_1"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}DecrypterChacha20 example ran successfully.${NC}"
