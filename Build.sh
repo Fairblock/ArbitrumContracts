@@ -1,3 +1,5 @@
+chmod +x build.sh
+
 # Initialize and update submodules
 git submodule init && git submodule update --recursive --init
 
@@ -13,6 +15,9 @@ source $HOME/.cargo/env  # Load Rust environment
 rustup install nightly-2024-05-20
 rustup override set nightly-2024-05-20
 rustup target add wasm32-unknown-unknown
+
+# Install Stylus
+cargo install --force cargo-stylus
 
 # Install Foundry
 curl -L https://foundry.paradigm.xyz | bash
