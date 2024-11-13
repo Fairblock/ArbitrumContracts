@@ -59,12 +59,12 @@ Run:
 
 Update your .env, if you forget to you can follow prompts that come up in the terminal when running the next command.
 
-3. Deploy the decryption contracts, take the newly deployed `Decrypter` smart contract and update your `.env`, and subsequently deploy and test an example sealed bid auction. You will see all of this occurring within the `StylusTutorial.sh` script.
+3. Deploy the decryption contracts, take the newly deployed `Decrypter` smart contract and update your `.env`, and subsequently deploy and test an example sealed bid auction. You will see all of this occurring within the `stylusTutorial.sh` script.
 
 Run:
 
 ```bash
-./StylusTutorial.sh
+./stylusTutorial.sh
 ```
 
 That's it! At this point you have deployed the decrypter contracts enabled by Stylus and Fairblock Technologies, a sealed bid auction example, and finally tested against it with two bidders on Sepolia.
