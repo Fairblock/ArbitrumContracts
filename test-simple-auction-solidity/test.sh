@@ -21,7 +21,7 @@ echo -e "${BLUE}Starting deployment and interaction script for SealedBidAuctionE
 echo -e "${YELLOW}Setting up configuration...${NC}"
 FEE=10  # Set auction fee, very small so example doesn't brick based on wallet balance
 
-# Get the current block number and set the deadline block to 2 blocks later
+# Get the current block number and set the deadline block to 10 blocks later
 CURRENT_BLOCK=$(cast block-number --rpc-url $rpc_url)
 DEADLINE_BLOCK=$((CURRENT_BLOCK + 10))
 
@@ -68,8 +68,6 @@ cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_2 $CONTRACT_ADDRESS "sub
 echo -e "${GREEN}Encrypted bid submitted!${NC}"
 
 echo -e "${YELLOW}Current block number: ${CURRENT_BLOCK}${NC}"
-
-sleep 32 #wait at least 2 blocks
 
 NEW_BLOCK=$(cast block-number --rpc-url $rpc_url)
 echo -e "${YELLOW}New block number: ${NEW_BLOCK}${NC}"
