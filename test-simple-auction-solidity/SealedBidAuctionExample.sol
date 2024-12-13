@@ -9,7 +9,7 @@ interface IDecrypter {
  * @title Simple Sealed Bid Auction App Example
  * @notice Example Auction App showcasing Solidity and Arbitrum Stylus Integrations with Fairblock Technologies. 
  * @dev Functions as a sealed-bid auction where bids are submitted encrypted and revealed using a decryption key once a certain time is passed, triggering the end of the auction. The auctionOwner gets the bid amount; this is assuming that the auction is tied to some offchain deliverable (Art auction etc.).
- * @dev This is purly for educational purposes and is not ready for production. Developers must carry out their own due diligence when it comes to deployment of smart contracts in production, including but not limited to, thorough audits, secure design practices, etc.
+ * @dev This is purely for educational purposes and is not ready for production. Developers must carry out their own due diligence when it comes to deployment of smart contracts in production, including but not limited to, thorough audits, secure design practices, etc.
  * @dev Actual transference of funds are not enacted within this example, as the main purpose is to showcase the use of encryption and conditional decryption and execution using Fairblock technologies. Decrypted values (bids) can be used with typical smart contract patterns for auction payments.
  */
 contract SealedBidAuctionExample {

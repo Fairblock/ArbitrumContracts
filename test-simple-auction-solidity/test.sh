@@ -27,7 +27,15 @@ DEADLINE_BLOCK=$((CURRENT_BLOCK + 10))
 
 # Deploy the Solidity contract
 echo -e "${YELLOW}Deploying SealedBidAuctionExample contract...${NC}"
-OUTPUT=$(forge create --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 test-simple-auction-solidity/SealedBidAuctionExample.sol:SealedBidAuctionExample --constructor-args $DEPLOYED_DECRYPTER_ADDRESS $DEADLINE_BLOCK $FEE 2>/dev/null)
+
+OUTPUT=$(forge create --broadcast --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 test-simple-auction-solidity/SealedBidAuctionExample.sol:SealedBidAuctionExample --constructor-args $DEPLOYED_DECRYPTER_ADDRESS $DEADLINE_BLOCK $FEE)2>/dev/null
+
+
+echo "Forge Output:"
+echo "$OUTPUT"
+
+
+
 CONTRACT_ADDRESS=$(echo "$OUTPUT" | grep "Deployed to:" | awk '{print $3}')
 echo -e "${GREEN}Contract deployed at address: $CONTRACT_ADDRESS${NC}"
 
@@ -50,7 +58,7 @@ go build
 bid_value=100
 Encrypted=$(./encrypter "Random_IBE_ID" $PUBLIC_KEY $bid_value)
 cd ../test-simple-auction-solidity
-BID_DATA=$(python3 convert_to_array.py $Encrypted) # TODO - is it typical that the data needs to be converted to an array in a similar fashion to be used with a solidity contract. 
+BID_DATA=$(python3 convert_to_array.py $Encrypted) 
 
 cast send --rpc-url $rpc_url --private-key $PRIVATE_KEY_1 $CONTRACT_ADDRESS "submitEncryptedBid(uint8[])" "$BID_DATA" --value $FEE
 echo -e "${GREEN}Encrypted bid submitted!${NC}"

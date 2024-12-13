@@ -83,10 +83,10 @@ Run:
 ```
 
 
-Update your .env, if you forget to, you can follow prompts that come up in the terminal when running the next command.
+This should take about 1-2 minutes but may vary based on your internet connetion speeds. Update your .env, if you forget to, you can follow prompts that come up in the terminal when running the next command.
 
 
-3. Deploy the decryption contracts, take the newly deployed `Decrypter` smart contract and update your `.env`, and subsequently deploy and test an example sealed bid auction. You will see all of this occurring within the `stylusTutorial.sh` script.
+3. Deploy the decryption contracts: this script will deploy the Decrypter smart contracts, take the newly deployed `Decrypter` interface smart contract address, update your `.env` with it, and subsequently deploy and test an example sealed bid auction. You will see all of this occurring within the `stylusTutorial.sh` script. This should take about 5 minutes but may vary based on your internet connetion speeds. You will be prompted to enter your own respective Arbitrum Sepolia wallets details, and then the new Decryption contract once it is deployed. 
 
 
 Run:
