@@ -5,7 +5,7 @@ Welcome to the Fairblock <> Arbitrum Stylus Integration Tutorial. This repo was 
 
 A walk through of this tutorial, alongside context on Fairblock and Arbitrum is provided in the video below. If you prefer learning by reading on your own, feel free to skip it and continue onward in this README!
 
-[![Video Title](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=gIzPgSw11uU&ab_channel=FairblockNetwork)
+[![Fairblock v1 Testnet and Arbitrum Stylus Integration Tutorial](https://img.youtube.com/vi/gIzPgSw11uU&ab_channel=FairblockNetwork/0.jpg)](https://www.youtube.com/watch?v=gIzPgSw11uU&ab_channel=FairblockNetwork)
 
 Fairblock is a dynamic confidentiality network that delivers high performance, low overhead, and custom confidential execution to blockchain applications. Dynamic confidentiality unlocks the encrypted economy — onchain applications designed for real-world use cases, like optimizable financial markets, competitive PVP markets like auctions, predictions, and gaming, and privacy-preserving inference.
 
